@@ -13,7 +13,11 @@ DEFAULT_THEME = 'default'
 # MONGODB
 DB_NAME = 'ultrA'
 
-MEDIA_PATH = '/var/run/media/whypro/4. Backups/apple/autoed/'
+if 'Windows' in platform.system():
+    MEDIA_PATH = 'F:\\apple\\autoed\\'
+else:
+    # MEDIA_PATH = '/var/run/media/whypro/4. Backups/apple/autoed/'
+    MEDIA_PATH = '/var/run/media/whypro/3. Media & Files/test/'
 
 
 

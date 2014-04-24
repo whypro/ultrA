@@ -1,13 +1,30 @@
+<h1>{{ topic.title }}</h1>
+<input id="title" name="title" />
+<a href="" id="edit_title">修改</a>
 <ul>
-    <li>{{ topic.title }}</li>
+    {% for image in images %}
     <li>
-	    <ul>
-	        {% for image in images %}
-	        <li>
-	           {{ image.sha1 }} <br />
-	           <a><img src="{{ url_for('frontend.show_image', oid=image._id) }}" /></a>
-	        </li>
-	        {% endfor %}
-	    </ul>
+        <a>
+            <img src="{{ url_for('frontend.show_image', oid=image._id) }}" />
+        </a>
     </li>
+    {% endfor %}
 </ul>
+<script src="{{ theme_static('js/jquery.js') }}"></script>
+<script>
+  $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+</script>
+<script>
+$(function() {
+  $('a#edit_title').bind('click', function() {
+    $.post($SCRIPT_ROOT + '/topic/{{ topic._id }}/_edit/', {
+      title: $('input[name="title"]').val(),
+    }, function(data) {
+      if (data.success == true) {
+    	  $("h1").text(data.title);
+      }
+    });
+    return false;
+  });
+});
+</script>
