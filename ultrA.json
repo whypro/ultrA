@@ -1,0 +1,17 @@
+// topic
+{
+    "_id": ObjectId(""),
+    "title": "", 
+    "images": [ObjectId(""), ...], 
+    "tags": ["", ...],
+    "time": ""
+}
+
+// image
+{
+    "_id": ObjectId(""),
+    "sha1": "",
+    "path": "",
+    "url": "",
+    "description": ""
+}

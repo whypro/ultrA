@@ -1,0 +1,13 @@
+<ul>
+    <li>{{ topic.title }}</li>
+    <li>
+	    <ul>
+	        {% for image in images %}
+	        <li>
+	           {{ image.sha1 }} <br />
+	           <a><img src="{{ url_for('frontend.show_image', oid=image._id) }}" /></a>
+	        </li>
+	        {% endfor %}
+	    </ul>
+    </li>
+</ul>
