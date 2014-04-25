@@ -1,4 +1,10 @@
 <ul>
+{% for tag in tags %}
+<li><a href="{{ url_for('.show_all_topics', tag=tag) }}">{{ tag }}</a></li>
+{% endfor %}
+</ul>
+
+<ul>
     {% for topic in topics %}
     <li>
         <a href="{{ url_for('frontend.show_topic', oid=topic._id) }}">
@@ -9,8 +15,3 @@
     {% endfor %}
 </ul>
 <p>共{{ topics.count() }}个</p>
-<ul>
-{% for tag in tags %}
-<li><a href="{{ url_for('.show_all_topics', tag=tag) }}">{{ tag }}</a></li>
-{% endfor %}
-</ul>

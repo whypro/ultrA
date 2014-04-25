@@ -26,6 +26,7 @@ def favicon():
 def index():
     return redirect(url_for('.show_all_topics'))
 
+
 @frontend.route('/topic/')
 @frontend.route('/topic/tag/<tag>/')
 def show_all_topics(tag=None):
@@ -54,7 +55,6 @@ def show_topic(oid):
     images = image_collection.find({'_id': {'$in': [image for image in topic['images']]}})
     print(images.count())
     
-    
     return render_template('show_topic.html', topic=topic, images=images, rate=rate)
 
 
@@ -73,10 +73,9 @@ def import_all(option):
     topic_collection = client[current_app.config['DB_NAME']]['topic']
     image_collection = client[current_app.config['DB_NAME']]['image']
     import_topics_and_images(path, topic_collection, image_collection, option)
-
-
-                            
+                  
     return 'Import finished.'
+
 
 @frontend.route('/image/<oid>/')
 def show_image(oid):
@@ -97,6 +96,7 @@ def remove_all():
     topic_collection.remove()
     image_collection.remove()
     return 'Removed.'
+
 
 def import_topics_and_images(path, topic_collection, image_collection, option=0):
     """

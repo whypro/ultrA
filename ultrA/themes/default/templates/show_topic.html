@@ -1,5 +1,5 @@
 <h1>{{ topic.title }}</h1>
-<input id="title" name="title" />
+<input id="title" name="title" value="{{ topic.title }}" />
 <select id="rate">
 <option value=""></option>
 <option value="1" {{ 'selected' if rate == 1 }}>1</option>
@@ -11,7 +11,7 @@
 <a href="" id="edit_title">修改</a>
 <ul>
     {% for image in images %}
-    <li>
+    <li style="text-align: center;">
         <a>
             <img src="{{ url_for('frontend.show_image', oid=image._id) }}" />
         </a>
