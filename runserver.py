@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function, unicode_literals
 import sys
 import os
 # 将依赖模块文件夹加入系统路径

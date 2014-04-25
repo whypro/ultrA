@@ -48,11 +48,14 @@ def show_topic(oid):
     topic_collection = client[current_app.config['DB_NAME']]['topic']
     image_collection = client[current_app.config['DB_NAME']]['image']
     topic = topic_collection.find_one({'_id': ObjectId(oid)})
-    images = image_collection.find({'_id': {'$in': [image for image in topic['images']]}})
-    print(images.count())
     if not topic:
         abort('404')
-    return render_template('show_topic.html', topic=topic, images=images)
+    rate = topic.get('rate')
+    images = image_collection.find({'_id': {'$in': [image for image in topic['images']]}})
+    print(images.count())
+    
+    
+    return render_template('show_topic.html', topic=topic, images=images, rate=rate)
 
 
 @frontend.route('/admin/import/')
@@ -145,7 +148,8 @@ def import_topics_and_images(path, topic_collection, image_collection, option=0)
                         for image in images:    # 遍历图片
                             rel_image_path = os.path.join(rel_topic_path, image)
                             image_path = os.path.join(topic_path, image)
-                            if os.path.isfile(image_path):
+                            # print(image.split('.')[-1].lower())
+                            if os.path.isfile(image_path) and image.split('.')[-1].lower() in current_app.config['IMAGES']:
                                 print(rel_image_path)
 
                                 image_found = image_collection.find_one({'path': rel_image_path})
@@ -182,9 +186,21 @@ def import_topics_and_images(path, topic_collection, image_collection, option=0)
 @frontend.route('/topic/<oid>/_edit/', methods=['POST'])
 def edit_topic(oid):
     title = request.form.get('title')
+    rate = request.form.get('rate')
+    
+    if rate in ('1', '2', '3', '4', '5'):
+        rate = int(rate)
+    elif rate:
+        abort('400')
+
     client = MongoClient()
     topic_collection = client[current_app.config['DB_NAME']]['topic']
-    topic_collection.update({'_id': ObjectId(oid)}, {'$set': {'title': title}})
-    return jsonify(title=title, success=True)
+    set_data = {}
+    if title: set_data['title'] = title
+    if rate: set_data['rate'] = rate
+    print(set_data)
+    topic_collection.update({'_id': ObjectId(oid)}, {'$set': set_data})
+    topic = topic_collection.find_one({'_id': ObjectId(oid)}, {'title': True, 'rate': True})
+    return jsonify(title=topic['title'], rate=topic['rate'], success=True)
 
     

@@ -1,5 +1,13 @@
 <h1>{{ topic.title }}</h1>
 <input id="title" name="title" />
+<select id="rate">
+<option value=""></option>
+<option value="1" {{ 'selected' if rate == 1 }}>1</option>
+<option value="2" {{ 'selected' if rate == 2 }}>2</option>
+<option value="3" {{ 'selected' if rate == 3 }}>3</option>
+<option value="4" {{ 'selected' if rate == 4 }}>4</option>
+<option value="5" {{ 'selected' if rate == 5 }}>5</option>
+</select>
 <a href="" id="edit_title">修改</a>
 <ul>
     {% for image in images %}
@@ -18,7 +26,8 @@
 $(function() {
   $('a#edit_title').bind('click', function() {
     $.post($SCRIPT_ROOT + '/topic/{{ topic._id }}/_edit/', {
-      title: $('input[name="title"]').val(),
+      title: $('#title').val(),
+      rate: $('#rate').val()
     }, function(data) {
       if (data.success == true) {
     	  $("h1").text(data.title);

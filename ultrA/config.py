@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+from __future__ import unicode_literals
 import os
 import platform
 
@@ -19,6 +20,5 @@ else:
     # MEDIA_PATH = '/var/run/media/whypro/4. Backups/apple/autoed/'
     MEDIA_PATH = '/var/run/media/whypro/3. Media & Files/test/'
 
-
-
+IMAGES = ('jpg', 'jpe', 'jpeg', 'png', 'gif', 'svg', 'bmp')
 

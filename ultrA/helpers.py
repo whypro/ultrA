@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 import os
 from urlparse import urlparse, urljoin
 from flask import current_app, request, url_for, redirect

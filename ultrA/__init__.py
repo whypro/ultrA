@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+from __future__ import unicode_literals
 from flask import Flask, g, flash, redirect, url_for
 from flask.ext.themes import setup_themes
 from ultrA import views
@@ -27,15 +27,15 @@ def configure_theme(app):
 def config_error_handlers(app):
     @app.errorhandler(404)
     def page_not_found(e):
-        flash(u'页面未找到', 'danger')
+        flash('页面未找到', 'danger')
         return redirect(url_for('frontend.index'))
 
     @app.errorhandler(401)
     def unauthorized(e):
-        flash(u'未经授权', 'danger')
+        flash('未经授权', 'danger')
         return redirect(url_for('frontend.index'))
 
     @app.errorhandler(500)
     def internal_server_error(e):
-        flash(u'服务器开小差了', 'danger')
+        flash('服务器开小差了', 'danger')
         return redirect(url_for('frontend.index'))
