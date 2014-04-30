@@ -70,7 +70,7 @@ img {
 
 
 h1, h2, h3, h4, h5, h6 {
-    font-family: 'Economica', sans-serif;;
+    font-family: 'Microsoft YaHei', sans-serif;;
 	color: #1a1a1a;
     font-weight: normal;
 }
@@ -310,7 +310,7 @@ header h1 a img {
     position: relative;
     background-color: #ff6765;
     color: #2a394e;
-    font: 27px/27px 'Economica', sans-serif;
+    font: 27px/27px 'Microsoft YaHei', sans-serif;
 }
 
 .p1_box a.bot span {

@@ -18,11 +18,12 @@
         <div class="grid_12">
             <nav class="horizontal-nav full-width horizontalNav-notprocessed">
                 <ul class="sf-menu">
-                    <li><a href="index.html">首页</a></li>
-                    <li><a href="index-1.html">About</a></li>
-                    <li class="current"><a href="show_topic.html">Gallery</a></li>
-                    <li><a href="index-3.html">Video</a></li>
-                    <li><a href="index-4.html">Contacts</a></li>
+                    {% set active_page = active_page|default('index') -%}
+                    <li{% if active_page == 'index' %} class="current"{% endif %}><a href="{{ url_for('frontend.index') }}">首页</a></li>
+                    <li{% if active_page == '1' %} class="current"{% endif %}><a href="index-1.html">About</a></li>
+                    <li{% if active_page == '2' %} class="current"{% endif %}><a href="show_topic.html">Gallery</a></li>
+                    <li{% if active_page == '3' %} class="current"{% endif %}><a href="index-3.html">Video</a></li>
+                    <li{% if active_page == '4' %} class="current"{% endif %}><a href="index-4.html">Contacts</a></li>
                 </ul>
             </nav>
             <div class="clear"></div>
