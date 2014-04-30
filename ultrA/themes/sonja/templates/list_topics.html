@@ -1,0 +1,25 @@
+{% extends theme('layout.html') %}
+{% block title %}{% endblock %}
+{% block content %}
+<div class="content"><div class="ic">More Website Templates @ TemplateMonster.com - December 30, 2013!</div>
+    <div class="container_12">
+        {% for topic in topics %}
+        <div class="grid_6">
+            <div class="p1_box {{ loop.cycle('left', 'right') }} cl1">
+                <div class="type"></div>
+                <img src="{{ url_for('frontend.show_image', oid=topic.images[0]) }}" alt="">
+                <a href="{{ url_for('frontend.show_topic', oid=topic._id) }}" class="bot">{{ topic.title }} <span>{{ topic.images | length }} <br>images</span></a>
+            </div>
+        </div>
+        {% if loop.index % 2 == 0 %}
+        <div class="clear"></div>
+        {% endif %}
+        {% endfor %}
+
+        <div class="clear"></div>
+        <div class="grid_12">
+            <a href="#" class="round"> Older Posts</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

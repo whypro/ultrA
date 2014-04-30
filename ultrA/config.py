@@ -9,7 +9,7 @@ DEBUG = True
 SECRET_KEY = 'I love you.'
 
 # FLASK-THEMES
-DEFAULT_THEME = 'default'
+DEFAULT_THEME = 'sonja'
 
 # MONGODB
 DB_NAME = 'ultrA'
