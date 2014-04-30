@@ -50,7 +50,7 @@ def show_topic(oid):
     image_collection = client[current_app.config['DB_NAME']]['image']
     topic = topic_collection.find_one({'_id': ObjectId(oid)})
     if not topic:
-        abort('404')
+        abort(404)
     rate = topic.get('rate')
     images = image_collection.find({'_id': {'$in': [image for image in topic['images']]}})
     print(images.count())
@@ -81,11 +81,11 @@ def import_all(option):
 def show_image(oid):
     client = MongoClient()
     image_collection = client[current_app.config['DB_NAME']]['image']
-    image = image_collection.find_one({'_id': ObjectId(oid)})    
-    return send_from_directory(
-        current_app.config['MEDIA_PATH'],
-        filename=image['path']
-    )
+    image = image_collection.find_one({'_id': ObjectId(oid)})
+    path = os.path.join(current_app.config['MEDIA_PATH'], image['path'])
+    directory = os.path.dirname(path)
+    filename = os.path.basename(path)
+    return send_from_directory(directory, filename)
 
 
 @frontend.route('/admin/remove/')
@@ -191,16 +191,17 @@ def edit_topic(oid):
     if rate in ('1', '2', '3', '4', '5'):
         rate = int(rate)
     elif rate:
-        abort('400')
+        abort(400)
 
     client = MongoClient()
     topic_collection = client[current_app.config['DB_NAME']]['topic']
     set_data = {}
-    if title: set_data['title'] = title
-    if rate: set_data['rate'] = rate
+    if title:
+        set_data['title'] = title
+    if rate:
+        set_data['rate'] = rate
     print(set_data)
     topic_collection.update({'_id': ObjectId(oid)}, {'$set': set_data})
     topic = topic_collection.find_one({'_id': ObjectId(oid)}, {'title': True, 'rate': True})
     return jsonify(title=topic['title'], rate=topic['rate'], success=True)
 
-    
