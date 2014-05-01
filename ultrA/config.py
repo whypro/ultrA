@@ -13,10 +13,12 @@ DEFAULT_THEME = 'sonja'
 
 # MONGODB
 DB_NAME = 'ultrA'
+TOPIC_COLLECTION = 'raw_topic'
+IMAGE_COLLECTION = 'raw_image'
 
 if 'Windows' in platform.system():
     # MEDIA_PATH = 'I:\\一些资料\\【图片】\\【互联网图片】\\'
-    MEDIA_PATH = 'F:\\apple\\autoed\\'
+    MEDIA_PATH = 'F:\\apple\\results\\'
     # MEDIA_PATH = 'E:\\test\\'
 else:
     # MEDIA_PATH = '/var/run/media/whypro/4. Backups/apple/autoed/'

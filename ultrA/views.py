@@ -12,7 +12,6 @@ from ultrA.helpers import render_template
 
 frontend = Blueprint('frontend', __name__)
 
-
 @frontend.route('/favicon.ico')
 def favicon():
     return send_from_directory(
@@ -26,17 +25,16 @@ def favicon():
 def index():
     return redirect(url_for('.show_all_topics'))
 
-
 @frontend.route('/topic/')
 @frontend.route('/topic/tag/<tag>/')
 def show_all_topics(tag=None):
     client = MongoClient()
-    topic_collection = client[current_app.config['DB_NAME']]['topic']
+    topic_collection = client[current_app.config['DB_NAME']][current_app.config['TOPIC_COLLECTION']]
     tags = topic_collection.distinct('tags')
     if not tag:
-        topics = topic_collection.find({}, {'title': True, 'images': True})
+        topics = topic_collection.find({}, {'title': True, 'images': True}).sort([('create_time', -1), ('_id', -1)]).limit(50)
     elif tag in tags:
-        topics = topic_collection.find({'tags': tag}, {'title': True, 'images': True})
+        topics = topic_collection.find({'tags': tag}, {'title': True, 'images': True}).sort([('create_time', -1), ('_id', -1)]).limit(50)
     else:
         abort(404)
         
@@ -46,8 +44,8 @@ def show_all_topics(tag=None):
 @frontend.route('/topic/<oid>/')
 def show_topic(oid):
     client = MongoClient()
-    topic_collection = client[current_app.config['DB_NAME']]['topic']
-    image_collection = client[current_app.config['DB_NAME']]['image']
+    topic_collection = client[current_app.config['DB_NAME']][current_app.config['TOPIC_COLLECTION']]
+    image_collection = client[current_app.config['DB_NAME']][current_app.config['IMAGE_COLLECTION']]
     topic = topic_collection.find_one({'_id': ObjectId(oid)})
     if not topic:
         abort(404)
@@ -70,8 +68,8 @@ def import_all(option):
     
     path = current_app.config['MEDIA_PATH']
     client = MongoClient()
-    topic_collection = client[current_app.config['DB_NAME']]['topic']
-    image_collection = client[current_app.config['DB_NAME']]['image']
+    topic_collection = client[current_app.config['DB_NAME']][current_app.config['TOPIC_COLLECTION']]
+    image_collection = client[current_app.config['DB_NAME']][current_app.config['IMAGE_COLLECTION']]
     import_topics_and_images(path, topic_collection, image_collection, option)
                   
     return 'Import finished.'
@@ -80,7 +78,7 @@ def import_all(option):
 @frontend.route('/image/<oid>/')
 def show_image(oid):
     client = MongoClient()
-    image_collection = client[current_app.config['DB_NAME']]['image']
+    image_collection = client[current_app.config['DB_NAME']][current_app.config['IMAGE_COLLECTION']]
     image = image_collection.find_one({'_id': ObjectId(oid)})
     path = os.path.join(current_app.config['MEDIA_PATH'], image['path'])
     directory = os.path.dirname(path)
@@ -91,8 +89,8 @@ def show_image(oid):
 @frontend.route('/admin/remove/')
 def remove_all():
     client = MongoClient()
-    topic_collection = client[current_app.config['DB_NAME']]['topic']
-    image_collection = client[current_app.config['DB_NAME']]['image']
+    topic_collection = client[current_app.config['DB_NAME']][current_app.config['TOPIC_COLLECTION']]
+    image_collection = client[current_app.config['DB_NAME']][current_app.config['IMAGE_COLLECTION']]
     topic_collection.remove()
     image_collection.remove()
     return 'Removed.'
@@ -194,7 +192,7 @@ def edit_topic(oid):
         abort(400)
 
     client = MongoClient()
-    topic_collection = client[current_app.config['DB_NAME']]['topic']
+    topic_collection = client[current_app.config['DB_NAME']][current_app.config['TOPIC_COLLECTION']]
     set_data = {}
     if title:
         set_data['title'] = title
@@ -203,5 +201,5 @@ def edit_topic(oid):
     print(set_data)
     topic_collection.update({'_id': ObjectId(oid)}, {'$set': set_data})
     topic = topic_collection.find_one({'_id': ObjectId(oid)}, {'title': True, 'rate': True})
-    return jsonify(title=topic['title'], rate=topic['rate'], success=True)
+    return jsonify(set_data, success=True)
 

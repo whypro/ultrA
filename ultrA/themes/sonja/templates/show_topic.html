@@ -7,7 +7,15 @@
         <div class="grid_12">
             <div class="box bx1">
                 <div class="inner">
-                    <h3>{{ topic.title }}</h3>
+                    <h3>
+                        <span id="title_span">{{ topic.title }}<span class="rate"></span></span>
+                        <div id="title_edit" style="display: none;">
+                        <input id="title_input" style="outline: 0; font-family: 'Microsoft YaHei', sans-serif; color: #1a1a1a; font-size: 27px; vertical-align: middle; width: 100%; " value="{{ topic.title }}" /><br />
+                        <button id="ok">确定</button>
+                        <button id="cancel">取消</button>
+                        </div>
+                    </h3>
+                    
                     <div class="gallery">
                         {% for image in images %}
                         <a href="{{ url_for('frontend.show_image', oid=image._id) }}" class="gal">
@@ -20,4 +28,41 @@
         </div>
     </div>
 </div>
+{% endblock %}
+{% block script %}
+<script src="{{ theme_static('js/jquery.raty.js') }}"></script>
+<script>
+$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+$().ready(function(){
+    $("#title_span").dblclick(function(){
+        $("#title_edit").slideDown();
+        
+    });
+    $("#cancel").click(function(){
+        $("#title_edit").slideUp();
+    });
+    $("#ok").click(function(){
+        $.post($SCRIPT_ROOT + '/topic/{{ topic._id }}/_edit/', {
+            title: $('#title_input').val(),
+        }, function(data) {
+            if (data.success == true) {
+                $("#title_span").text(data.title);
+            }
+        });
+        $("#title_edit").slideUp();
+        return false;
+    });
+});
+$('.rate').raty({
+    score: {{ topic.rate if topic.rate else 0 }},
+    path: "{{ theme_static('images/raty') }}",
+    iconRange: [
+        {range: 1, on: 'star-on-big.png', off: 'star-off-big.png'},
+        {range: 5, on: 'star-on-big.png', off: 'star-off-big.png'},
+    ],
+    size: 24
+});
+</script>
+});
+</script>
 {% endblock %}
