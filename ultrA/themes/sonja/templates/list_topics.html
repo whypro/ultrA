@@ -2,6 +2,9 @@
 {% set active_page = 'index' %}
 {% block title %}{% endblock %}
 {% block content %}
+{% for tag in tags %}
+<a href="{{ url_for('frontend.show_all_topics', tag=tag) }}">{{ tag }}</a>
+{% endfor %}
 <div class="content"><div class="ic">More Website Templates @ TemplateMonster.com - December 30, 2013!</div>
     <div class="container_12">
         {% for topic in topics %}

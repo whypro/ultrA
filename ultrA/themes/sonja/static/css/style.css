@@ -659,7 +659,7 @@ a.gal img {
 }
 
 a.gal:hover img {
-    opacity: 0.2;
+    opacity: 1.0;   /* 图片透明度 */
 }
 
 .latest {

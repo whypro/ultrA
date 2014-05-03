@@ -8,7 +8,9 @@
             <div class="box bx1">
                 <div class="inner">
                     <h3>
-                        <span id="title_span">{{ topic.title }}<span class="rate"></span></span>
+                        <span id="title_span">{{ topic.title }}</span>
+                        <span class="rate"></span>
+                        <button id="delete">删除</button>
                         <div id="title_edit" style="display: none;">
                         <input id="title_input" style="outline: 0; font-family: 'Microsoft YaHei', sans-serif; color: #1a1a1a; font-size: 27px; vertical-align: middle; width: 100%; " value="{{ topic.title }}" /><br />
                         <button id="ok">确定</button>
@@ -47,9 +49,18 @@ $().ready(function(){
         }, function(data) {
             if (data.success == true) {
                 $("#title_span").text(data.title);
+                $("#title_edit").slideUp();
             }
         });
-        $("#title_edit").slideUp();
+        return false;
+    });
+
+    $("#delete").click(function(){
+        $.post($SCRIPT_ROOT + '/topic/{{ topic._id }}/_delete/', {
+            title: $('#title_input').val(),
+        }, function(data) {
+            history.go(-1);
+        });
         return false;
     });
 });
@@ -60,7 +71,13 @@ $('.rate').raty({
         {range: 1, on: 'star-on-big.png', off: 'star-off-big.png'},
         {range: 5, on: 'star-on-big.png', off: 'star-off-big.png'},
     ],
-    size: 24
+    size: 24,
+    click: function(score, evt) {
+        $.post($SCRIPT_ROOT + '/topic/{{ topic._id }}/_edit/', {
+            rate: score,
+        });
+        return false;
+    }
 });
 </script>
 });
