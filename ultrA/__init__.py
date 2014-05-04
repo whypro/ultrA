@@ -18,6 +18,7 @@ def create_app(config=None):
 
 def config_blueprints(app):
     app.register_blueprint(views.frontend)
+    app.register_blueprint(views.admin)
 
 
 def configure_theme(app):

@@ -6,7 +6,7 @@
 }
 
 .menu_block nav {
-    font-family: 'Economica', sans-serif;
+    font-family: 'Microsoft YaHei', sans-serif;
 }
 
 nav>.sf-menu {
@@ -27,8 +27,8 @@ nav {
 	float: none;
 	position: relative;
 	z-index: 5;
-	font-size: 28px;
-	line-height: 24px;
+	font-size: 24px;
+	line-height: 20px;
 }
 
 .sf-menu>li+li {

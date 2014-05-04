@@ -44,8 +44,8 @@ $().ready(function(){
         $("#title_edit").slideUp();
     });
     $("#ok").click(function(){
-        $.post($SCRIPT_ROOT + '/topic/{{ topic._id }}/_edit/', {
-            title: $('#title_input').val(),
+        $.post($SCRIPT_ROOT + "{{ url_for('._edit_topic', oid=topic._id) }}", {
+            title: $('#title_input').val()
         }, function(data) {
             if (data.success == true) {
                 $("#title_span").text(data.title);
@@ -56,8 +56,8 @@ $().ready(function(){
     });
 
     $("#delete").click(function(){
-        $.post($SCRIPT_ROOT + '/topic/{{ topic._id }}/_delete/', {
-            title: $('#title_input').val(),
+        $.post($SCRIPT_ROOT + "{{ url_for('._delete_topic', oid=topic._id) }}", {
+            title: $('#title_input').val()
         }, function(data) {
             history.go(-1);
         });
