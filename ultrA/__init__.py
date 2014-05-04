@@ -27,6 +27,7 @@ def configure_theme(app):
 def config_error_handlers(app):
     @app.errorhandler(404)
     def page_not_found(e):
+        print('404')
         flash('页面未找到', 'danger')
         return redirect(url_for('frontend.index'))
 

@@ -2,6 +2,7 @@
 from __future__ import print_function, unicode_literals
 import os
 import datetime
+import time
 import hashlib
 from bson.objectid import ObjectId
 from flask import Blueprint, send_from_directory, current_app, abort, redirect
@@ -36,8 +37,8 @@ def show_all_topics(tag=None):
             {'deleted': {'$ne': True}},
             {'title': True, 'images': True}
         ).sort([
-            ('click_count', 1), 
-            #('rate', -1),
+            #('click_count', 1), 
+            ('rate', 1),
             ('_id', -1)
         ]).limit(50)
     elif tag in tags:
@@ -45,8 +46,8 @@ def show_all_topics(tag=None):
             {'tags': tag, 'deleted': {'$ne': True}},
             {'title': True, 'images': True}
         ).sort([
-            ('click_count', 1), 
-            #('rate', -1),
+            #('click_count', 1), 
+            ('rate', 1),
             ('_id', -1)
         ]).limit(50)
     else:
@@ -64,7 +65,7 @@ def show_topic(oid):
     if not topic:
         abort(404)
     rate = topic.get('rate')
-    images = image_collection.find({'_id': {'$in': [image for image in topic['images']]}})
+    images = image_collection.find({'_id': {'$in': list(topic['images'])}})
     print(images.count())
     topic_collection.update({'_id': ObjectId(oid)}, {'$inc': {'click_count': 1}})
     return render_template('show_topic.html', topic=topic, images=images, rate=rate)
@@ -99,6 +100,14 @@ def show_image(oid):
     path = os.path.join(current_app.config['MEDIA_PATH'], image['path'])
     directory = os.path.dirname(path)
     filename = os.path.basename(path)
+
+    # from PIL import Image
+    # size = 400, 400
+    # im = Image.open(path)
+    # im.thumbnail(size, Image.ANTIALIAS)
+    # im.save('D:\\temp.jpg')
+    # return send_from_directory('D:\\', 'temp.jpg')
+
     return send_from_directory(directory, filename)
 
 
