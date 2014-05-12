@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
-from __future__ import print_function, unicode_literals
+from __future__ import print_function, unicode_literals, division
 import os
 import hashlib
 from flask import Blueprint, abort, current_app
 from pymongo import MongoClient
 from ultrA.helpers import render_template
+from ultrA.views.frontend import delete_topic
+
+admin = Blueprint('admin', __name__, url_prefix='/admin')
 
 
-admin = Blueprint('admin', __name__)
-
-
-@admin.route('/admin/import/')
+@admin.route('/import/')
 def show_import():
     return render_template('admin/show_import.html')
 
 
-@admin.route('/admin/import/<int:option>/')
+@admin.route('/import/<int:option>/')
 def import_all(option):
     if option not in (0, 1, 2):
         abort(404)
@@ -29,7 +29,7 @@ def import_all(option):
     return 'Import finished.'
 
 
-@admin.route('/admin/remove/')
+@admin.route('/remove/')
 def remove_all():
     client = MongoClient()
     topic_collection = client[current_app.config['DB_NAME']][current_app.config['TOPIC_COLLECTION']]
@@ -122,3 +122,32 @@ def import_topics_and_images(path, topic_collection, image_collection, option=0)
 
                                 image_id = image_collection.find_one({'path': rel_image_path}, {'_id': True}).get('_id')
                                 topic_collection.update({'title': topic}, {'$addToSet': {'images': image_id}})
+
+
+# @admin.route('/clean/')
+# def show_clean():
+#     return render_template('show_clean.html')
+
+@admin.route('/clean/')
+def clean_topic():
+    client = MongoClient()
+    topic_collection = client[current_app.config['DB_NAME']][current_app.config['TOPIC_COLLECTION']]
+    image_collection = client[current_app.config['DB_NAME']][current_app.config['IMAGE_COLLECTION']]
+    blur_image_collection = client[current_app.config['DB_NAME']][current_app.config['BLUR_IMAGE_COLLECTION']]
+    # 如果一个 topic 内图片个数为 0，则删除 topic
+    topic_collection.update({'images': []}, {'$set': {'deleted': True}}, multi=True)
+
+    # 如果一个 topic 内包含的 blur_image 数大于图片个数的 1/X，删除 topic 和图片
+    topics = topic_collection.find({'deleted': {'$ne': True}}, {'images': True})
+    blur_images = blur_image_collection.find()
+    for topic in topics:
+        # print(topic['_id'])
+        images = image_collection.find({'_id': {'$in': list(topic['images'])}}, {'sha1': True})
+        images_sha1 = [image['sha1'] for image in images]
+        blur_images_sha1 = [blur_image['sha1'] for blur_image in blur_images]
+        # print(images_sha1)
+        # print(blur_images_sha1)
+        if len(set(images_sha1).intersection(set(blur_images_sha1))) / len(images_sha1) > 0.8:
+            print(topic['_id'])
+            delete_topic(topic['_id'])
+    return 'clean'

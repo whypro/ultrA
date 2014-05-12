@@ -53,7 +53,7 @@ def show_all_topics(tag=None):
     else:
         abort(404)
         
-    return render_template('list_topics.html', topics=topics, tags=tags)
+    return render_template('frontend/list_topics.html', topics=topics, tags=tags)
 
 
 @frontend.route('/topic/<oid>/')
@@ -68,7 +68,7 @@ def show_topic(oid):
     images = image_collection.find({'_id': {'$in': list(topic['images'])}})
     print(images.count())
     topic_collection.update({'_id': ObjectId(oid)}, {'$inc': {'click_count': 1}})
-    return render_template('show_topic.html', topic=topic, images=images, rate=rate)
+    return render_template('frontend/show_topic.html', topic=topic, images=images, rate=rate)
 
 
 @frontend.route('/image/<oid>/')
@@ -93,7 +93,7 @@ def show_image(oid):
 
 
 @frontend.route('/topic/<oid>/_delete/', methods=['POST'])
-def _delete_topic(oid):
+def delete_topic(oid):
     # remove_local = request.form.get('remove_local')
     client = MongoClient()
     topic_collection = client[current_app.config['DB_NAME']][current_app.config['TOPIC_COLLECTION']]
@@ -114,7 +114,7 @@ def _delete_topic(oid):
 
 
 @frontend.route('/topic/<oid>/_edit/', methods=['POST'])
-def _edit_topic(oid):
+def edit_topic(oid):
     title = request.form.get('title')
     rate = request.form.get('rate')
     

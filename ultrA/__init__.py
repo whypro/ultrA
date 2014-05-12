@@ -26,18 +26,19 @@ def configure_theme(app):
 
 
 def config_error_handlers(app):
-    @app.errorhandler(404)
-    def page_not_found(e):
-        print('404')
-        flash('页面未找到', 'danger')
-        return redirect(url_for('frontend.index'))
-
-    @app.errorhandler(401)
-    def unauthorized(e):
-        flash('未经授权', 'danger')
-        return redirect(url_for('frontend.index'))
-
-    @app.errorhandler(500)
-    def internal_server_error(e):
-        flash('服务器开小差了', 'danger')
-        return redirect(url_for('frontend.index'))
+    pass
+    # @app.errorhandler(404)
+    # def page_not_found(e):
+    #     print('404')
+    #     flash('页面未找到', 'danger')
+    #     return redirect(url_for('frontend.index'))
+    #
+    # @app.errorhandler(401)
+    # def unauthorized(e):
+    #     flash('未经授权', 'danger')
+    #     return redirect(url_for('frontend.index'))
+    #
+    # @app.errorhandler(500)
+    # def internal_server_error(e):
+    #     flash('服务器开小差了', 'danger')
+    #     return redirect(url_for('frontend.index'))

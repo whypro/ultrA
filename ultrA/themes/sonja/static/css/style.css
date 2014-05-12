@@ -317,15 +317,14 @@ header h1 a img {
     display: block;
     position: absolute;
     color: #fff;
-    font-size: 18px;
-    line-height: 18px;
+    font: 16px/16px 'Bookman Old Style', sans-serif;
     right: -1px;
     top: -1px;
     bottom: -1px;
     background-color: #ff8382;
     width: 81px;
     text-align: center;
-    padding-top: 18px;
+    padding-top: 16px;
 }
 
 .p1_box a.bot:hover {

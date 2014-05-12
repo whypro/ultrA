@@ -13,8 +13,11 @@ DEFAULT_THEME = 'sonja'
 
 # MONGODB
 DB_NAME = 'ultrA'
+#TOPIC_COLLECTION = 'raw_topic'
+#IMAGE_COLLECTION = 'raw_image'
 TOPIC_COLLECTION = 'test_topic'
 IMAGE_COLLECTION = 'test_image'
+BLUR_IMAGE_COLLECTION = 'blur_image'
 
 if 'Windows' in platform.system():
     # MEDIA_PATH = 'I:\\一些资料\\【图片】\\【互联网图片】\\'
