@@ -112,6 +112,17 @@ def show_image(oid):
     return send_from_directory(directory, filename)
 
 
+@frontend.route('/image/<oid>/_discard/', methods=['GET'])
+def discard_image(oid):
+    client = MongoClient()
+    image_collection = client[current_app.config['DB_NAME']][current_app.config['IMAGE_COLLECTION']]
+    discarded_image_collection = client[current_app.config['DB_NAME']][current_app.config['DISCARDED_IMAGE_COLLECTION']]
+    image = image_collection.find_one({'_id': ObjectId(oid)})
+    if not image:
+        return jsonify(error=404)
+    discarded_image_collection.update({'sha1': image['sha1']}, {'sha1': image['sha1']}, upsert=True)
+    return jsonify({})
+
 @frontend.route('/topic/<oid>/_delete/', methods=['POST'])
 def delete_topic(oid):
     # remove_local = request.form.get('remove_local')
@@ -119,6 +130,8 @@ def delete_topic(oid):
     topic_collection = client[current_app.config['DB_NAME']][current_app.config['TOPIC_COLLECTION']]
     image_collection = client[current_app.config['DB_NAME']][current_app.config['IMAGE_COLLECTION']]
     topic = topic_collection.find_one({'_id': ObjectId(oid)})
+    if not topic:
+        return jsonify(error=404)
     first_image = image_collection.find_one({'_id': {'$in': topic['images']}})
     # 删除图片目录
     if first_image:

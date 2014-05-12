@@ -17,7 +17,7 @@ DB_NAME = 'ultrA'
 #IMAGE_COLLECTION = 'raw_image'
 TOPIC_COLLECTION = 'test_topic'
 IMAGE_COLLECTION = 'test_image'
-BLUR_IMAGE_COLLECTION = 'blur_image'
+DISCARDED_IMAGE_COLLECTION = 'discarded_image'
 
 if 'Windows' in platform.system():
     # MEDIA_PATH = 'I:\\一些资料\\【图片】\\【互联网图片】\\'
