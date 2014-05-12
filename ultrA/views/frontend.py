@@ -32,28 +32,48 @@ def show_all_topics(tag=None):
     client = MongoClient()
     topic_collection = client[current_app.config['DB_NAME']][current_app.config['TOPIC_COLLECTION']]
     tags = topic_collection.distinct('tags')
-    if not tag:
-        topics = topic_collection.find(
-            {'deleted': {'$ne': True}},
-            {'title': True, 'images': True}
-        ).sort([
-            #('click_count', 1), 
-            ('rate', 1),
-            ('_id', -1)
-        ]).limit(50)
-    elif tag in tags:
-        topics = topic_collection.find(
-            {'tags': tag, 'deleted': {'$ne': True}},
-            {'title': True, 'images': True}
-        ).sort([
-            #('click_count', 1), 
-            ('rate', 1),
-            ('_id', -1)
-        ]).limit(50)
-    else:
+    if tag and tag not in tags:
         abort(404)
-        
+
+    condition = {'deleted': {'$ne': True}}
+    if tag in tags:
+        condition['tags'] = tag
+    topics = topic_collection.find(
+        condition,
+        {'title': True, 'images': True}
+    ).sort([
+        #('click_count', 1),
+        ('rate', 1),
+        ('_id', -1)
+    ]).limit(50)
+
     return render_template('frontend/list_topics.html', topics=topics, tags=tags)
+
+
+@frontend.route('/_topic/')
+@frontend.route('/_topic/tag/<tag>/')
+def get_topics(tag=None):
+    start = request.args.get('start', 0)
+    count = request.args.get('count', 20)
+    client = MongoClient()
+    topic_collection = client[current_app.config['DB_NAME']][current_app.config['TOPIC_COLLECTION']]
+    condition = {'deleted': {'$ne': True}}
+    if tag:
+        condition['tags'] = tag
+    topics = topic_collection.find(
+        condition, {'title': True, 'images': True}
+    ).sort([
+        ('rate', 1),
+        ('_id', -1)
+    ]).skip(start).limit(count)
+    count = topics.count()
+    total = topic_collection.find().count()
+    # start, count, total
+
+    return jsonify(
+        start=start, count=count, total=total,
+        topics=[{'title': topic['title'], 'cover': str(topic['images'][0])} for topic in topics],
+    )
 
 
 @frontend.route('/topic/<oid>/')

@@ -10,9 +10,9 @@ from ultrA.views.frontend import delete_topic
 admin = Blueprint('admin', __name__, url_prefix='/admin')
 
 
-@admin.route('/import/')
-def show_import():
-    return render_template('admin/show_import.html')
+@admin.route('/')
+def index():
+    return render_template('admin/index.html')
 
 
 @admin.route('/import/<int:option>/')
@@ -124,10 +124,6 @@ def import_topics_and_images(path, topic_collection, image_collection, option=0)
                                 topic_collection.update({'title': topic}, {'$addToSet': {'images': image_id}})
 
 
-# @admin.route('/clean/')
-# def show_clean():
-#     return render_template('show_clean.html')
-
 @admin.route('/clean/')
 def clean_topic():
     client = MongoClient()
@@ -150,4 +146,4 @@ def clean_topic():
         if len(set(images_sha1).intersection(set(blur_images_sha1))) / len(images_sha1) > 0.8:
             print(topic['_id'])
             delete_topic(topic['_id'])
-    return 'clean'
+    return 'Clean finished.'

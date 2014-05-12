@@ -1,0 +1,27 @@
+<ul>
+    导入主题
+    <li>
+        <a href="{{ url_for('.import_all', option=0) }}">忽略已存在的记录</a>
+    </li>
+    <li>
+        <a href="{{ url_for('.import_all', option=1) }}">更新已存在的记录</a>
+    </li>
+    <li>
+        <a href="{{ url_for('.import_all', option=2) }}">重建已存在的记录</a>
+    </li>
+</ul>
+
+<ul>
+    清理主题
+    <li>
+        <a href="{{ url_for('.clean_topic') }}">清理主题</a>
+    </li>
+    <li>
+        <a href="">清空全部主题</a>
+    </li>
+</ul>
+
+
+
+
+
