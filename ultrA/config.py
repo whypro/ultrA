@@ -26,7 +26,8 @@ if 'Windows' in platform.system():
     # MEDIA_PATH = 'E:\\test\\'
 else:
     # MEDIA_PATH = '/var/run/media/whypro/4. Backups/apple/autoed/'
-    MEDIA_PATH = '/var/run/media/whypro/My Book/一些资料/【图片】/【互联网图片】/'
+    # MEDIA_PATH = '/var/run/media/whypro/My Book/一些资料/【图片】/【互联网图片】/'
+    MEDIA_PATH = '/var/run/media/whypro/4. Backups/apple/results/'
 
 IMAGES = ('jpg', 'jpe', 'jpeg', 'png', 'gif', 'svg', 'bmp')
 
