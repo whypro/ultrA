@@ -145,7 +145,11 @@ def clean_topic():
         # print(set(discarded_images_sha1))
         # print(set(images_sha1).intersection(set(discarded_images_sha1)))
         # print(len(set(images_sha1).intersection(set(discarded_images_sha1))) / len(images_sha1))
-        if len(set(images_sha1).intersection(set(discarded_images_sha1))) / len(images_sha1) > 0.6:
+        discarded_count = 0
+        for image_sha1 in images_sha1:
+            if image_sha1 in discarded_images_sha1:
+                discarded_count += 1
+        if discarded_count / len(images_sha1) > 0.6:
             print(topic['_id'])
             delete_topic(topic['_id'])
     return 'Clean finished.'
