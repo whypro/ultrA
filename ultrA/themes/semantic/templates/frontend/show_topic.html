@@ -1,0 +1,140 @@
+{% extends theme('layout.html') %}
+{% set active_page = 'index' %}
+{% block title %}{{ topic.title }}{% endblock %}
+{% block content %}
+<div class="ui page grid">
+  <div class="center aligned row">
+  <div class="column">
+  <h1 id="title" class="ui header">{{ topic.title }}</h1>
+
+  <div id="title_edit" class="ui form" style="display: none;">
+    <div class="ui two fields">
+      <div class="twelve wide field">
+        <input id="title_input" type="text" value="{{ topic.title }}">
+      </div>
+      <div class="four wide field">
+        <div class="ui buttons">
+          <div id="save" class="ui positive button">保存</div>
+          <div class="or"></div>
+          <div id="cancel" class="ui button">取消</div>
+        </div>
+      </div>
+
+    </div>
+
+
+  </div>
+
+  <div id="rating_top" class="ui large heart rating active" data-rating="{{ topic.rate }}">
+    <i class="icon"></i>
+    <i class="icon"></i>
+    <i class="icon"></i>
+    <i class="icon"></i>
+    <i class="icon"></i>
+  </div>
+
+  <div class="ui horizontal divider"><i class="camera icon"></i></div>
+
+  <div class="ui images">
+    {% for image in images %}
+    <a class="ui image" href="{{ url_for('frontend.show_image', oid=image._id) }}">
+        <img src="{{ url_for('frontend.show_image', oid=image._id) }}" />
+    </a>
+    {% endfor %}
+  </div>
+
+  <div class="ui horizontal icon divider">
+    <i class="circular heart icon"></i>
+  </div>
+  </div>
+  </div>
+  <div class="middle aligned row">
+    <div class="eight wide left aligned column">
+      <div id="rating_bottom" class="ui middle heart rating active" data-rating="{{ topic.rate }}">
+        <i class="icon"></i>
+        <i class="icon"></i>
+        <i class="icon"></i>
+        <i class="icon"></i>
+        <i class="icon"></i>
+      </div>
+    </div>
+    <div class="eight wide right aligned column">
+      <div id="delete" class="ui circular small red button">删除</div>
+    </div>
+  </div>
+</div>
+
+
+<div class="ui basic small modal">
+  <div class="header">真的要删除吗？</div>
+  <div class="content">
+    删除后将不可恢复。
+    <div class="actions">
+      <div class="ui circular tiny positive icon button">
+        <i class="checkmark icon"></i>
+      </div>
+      <div class="ui circular tiny negative icon button">
+        <i class="remove icon"></i>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+{% block script%}
+<script>
+/* 评分模块*/
+$("#rating_top").rating("disable");
+
+$("#rating_bottom").rating({
+  onRate: function(value){
+    if (value != "{{ topic.rate }}") {
+      // alert(value);
+      $("#rating_top").rating("set rating", value);
+      $.post("{{ url_for('.edit_topic', oid=topic._id) }}", {
+        rate: value
+      });
+    }
+  }
+});
+
+/* 修改标题模块 */
+$("#title").dblclick(function(){
+  if ($("#title_edit").css("display") == "none") {
+      $("#title_edit").slideDown();
+  }
+  else {
+      $("#title_edit").slideUp();
+  }
+});
+
+$("#save").click(function(){
+    $.post("{{ url_for('.edit_topic', oid=topic._id) }}", {
+      title: $('#title_input').val()
+    }, function(data) {
+        if (data.success == true) {
+            $("#title").text(data.title);
+            $("#title_edit").slideUp();
+        }
+    });
+});
+
+$("#cancel").click(function(){
+    $("#title_edit").slideUp();
+});
+
+/* */
+$("#delete").click(function(){
+
+  $('.modal').modal('setting', {
+    closable  : false,
+    onApprove : function() {
+      $.post("{{ url_for('.delete_topic', oid=topic._id) }}", null, function(data) {
+            history.go(-1);
+      });
+    }
+  }).modal('show');
+})
+
+</script>
+{% endblock %}

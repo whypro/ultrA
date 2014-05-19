@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 from flask import Flask, g, flash, redirect, url_for
 from flask.ext.themes import setup_themes
+from pymongo import MongoClient
 from ultrA import views
 
 
@@ -12,6 +13,7 @@ def create_app(config=None):
     config_blueprints(app)
     config_error_handlers(app)
     configure_theme(app)
+    config_context_processor(app)
 
     return app
 
@@ -42,3 +44,12 @@ def config_error_handlers(app):
     # def internal_server_error(e):
     #     flash('服务器开小差了', 'danger')
     #     return redirect(url_for('frontend.index'))
+
+
+def config_context_processor(app):
+    @app.context_processor
+    def inject_tags():
+        client = MongoClient()
+        topic_collection = client[app.config['DB_NAME']][app.config['TOPIC_COLLECTION']]
+        tags = topic_collection.distinct('tags')
+        return dict(tags=tags)

@@ -2,7 +2,7 @@
 from __future__ import print_function, unicode_literals, division
 import os
 import hashlib
-from flask import Blueprint, abort, current_app
+from flask import Blueprint, abort, current_app, jsonify
 from pymongo import MongoClient
 from ultrA.helpers import render_template
 from ultrA.views.frontend import delete_topic
@@ -137,9 +137,15 @@ def clean_topic():
     topics = topic_collection.find({'deleted': {'$ne': True}}, {'images': True})
     discarded_images = discarded_image_collection.find({})
     discarded_images_sha1 = [discarded_image['sha1'] for discarded_image in discarded_images]
+    delete_num = 0
+    total_num = topics.count()
     for topic in topics:
         # print(topic['_id'])
         images = image_collection.find({'_id': {'$in': list(topic['images'])}}, {'sha1': True})
+        if not images.count():
+            # 如果主题已没有图片，直接标记为已删除
+            topic_collection.update({'_id': topic['_id']}, {'$set': {'deleted': True}})
+            continue
         images_sha1 = [image['sha1'] for image in images]
         # print(set(images_sha1))
         # print(set(discarded_images_sha1))
@@ -151,5 +157,7 @@ def clean_topic():
                 discarded_count += 1
         if discarded_count / len(images_sha1) > 0.6:
             print(topic['_id'])
+            delete_num += 1
             delete_topic(topic['_id'])
-    return 'Clean finished.'
+    return jsonify(delete=delete_num, total=total_num)
+    # return 'Clean finished.'

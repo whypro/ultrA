@@ -1,0 +1,29 @@
+{% extends theme('layout.html') %}
+{% set active_page = 'index' %}
+{% block title %}首页{% endblock %}
+{% block content %}
+<div class="ui page grid">
+  <div class="column">
+    <div class="ui three stackable items">
+      {% for topic in topics %}
+      <div class="item">
+        <div class="image">
+          <a class="ui image" href="{{ url_for('frontend.show_topic', oid=topic._id) }}">
+            <img src="{{ url_for('frontend.show_image', oid=topic.images[0]) }}" alt="{{ topic.title }}" />
+          </a>
+            <a class="star ui corner label">
+              <i class="star icon"></i>
+            </a>
+        </div>
+        <div class="content">
+          <div class="name">{{ topic.title }}</div>
+          <p class="description"></p>
+        </div>
+        <div class="extra">{{ topic.images | length }} images</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}
