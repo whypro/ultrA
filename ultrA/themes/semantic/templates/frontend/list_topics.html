@@ -9,7 +9,7 @@
       <div class="item">
         <div class="image">
           <a class="ui image" href="{{ url_for('frontend.show_topic', oid=topic._id) }}">
-            <img src="{{ url_for('frontend.show_image', oid=topic.cover) }}" alt="{{ topic.title }}" />
+            <img src="{{ url_for('frontend.send_image', oid=topic.cover) }}" alt="{{ topic.title }}" />
           </a>
           <div class="floating ui circular red label">{{ topic.size }}</div>
         </div>

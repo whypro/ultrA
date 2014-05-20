@@ -1,5 +1,5 @@
 {% extends theme('layout.html') %}
-{% set active_page = 'index' %}
+{% set active_page = 'topic' %}
 {% block title %}{{ topic.title }}{% endblock %}
 {% block content %}
 <div class="ui page grid">
@@ -38,8 +38,9 @@
   <div class="ui images">
     {% for image in images %}
     <a class="ui image" href="{{ url_for('frontend.show_image', oid=image._id) }}">
-        <img src="{{ url_for('frontend.show_image', oid=image._id) }}" />
+        <img src="{{ url_for('frontend.send_image', oid=image._id) }}" />
     </a>
+    <div class="ui divider"></div>
     {% endfor %}
   </div>
 
@@ -50,6 +51,9 @@
   </div>
   <div class="two column row">
     <div class="left aligned column">
+      <div id="delete" class="ui circular small red button">删除</div>
+    </div>
+    <div class="right aligned column">
       <div id="rating_bottom" class="ui large heart rating active" data-rating="{{ topic.rate }}">
         <i class="icon"></i>
         <i class="icon"></i>
@@ -57,9 +61,6 @@
         <i class="icon"></i>
         <i class="icon"></i>
       </div>
-    </div>
-    <div class="right aligned column">
-      <div id="delete" class="ui circular small red button">删除</div>
     </div>
   </div>
 </div>
@@ -123,7 +124,7 @@ $("#cancel").click(function(){
     $("#title_edit").slideUp();
 });
 
-/* */
+/* 删除主题 */
 $("#delete").click(function(){
 
   $('.modal').modal('setting', {

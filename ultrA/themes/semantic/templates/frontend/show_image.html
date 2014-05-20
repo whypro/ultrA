@@ -1,0 +1,50 @@
+{% extends theme('layout.html') %}
+{% set active_page = 'image' %}
+{% block title %}{% endblock %}
+{% block content %}
+<div class="ui page grid">
+<div id="discard" class="ui circular small red button">丢弃</div>
+  <div class="center align row">
+    <img class="ui image" src="{{ url_for('frontend.send_image', oid=image._id) }}" />
+  </div>
+	
+  <div class="ui horizontal icon divider">
+    <i class="circular heart icon"></i>
+  </div>
+
+</div>
+
+
+
+<div class="ui basic small modal">
+  <div class="header">真的要丢弃吗？</div>
+  <div class="content">
+    丢弃后将不可恢复。
+    <div class="actions">
+      <div class="ui circular tiny positive icon button">
+        <i class="checkmark icon"></i>
+      </div>
+      <div class="ui circular tiny negative icon button">
+        <i class="remove icon"></i>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+{% block script%}
+<script>
+/* 丢弃主题 */
+$("#discard").click(function(){
+
+  $('.modal').modal('setting', {
+    closable  : false,
+    onApprove : function() {
+      $.post("{{ url_for('.discard_image', oid=image._id) }}", null, function(data) {
+            history.go(-1);
+      });
+    }
+  }).modal('show');
+})
+</script>
+{% endblock %}

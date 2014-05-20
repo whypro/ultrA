@@ -70,7 +70,7 @@ def get_topics(tag=None):
         ('_id', -1)
     ]).skip(start).limit(count)
     count = topics.count()
-    total = topic_collection.find().count()
+    total = topic_collection.find(condition).count()
     # start, count, total
 
     return jsonify(
@@ -93,9 +93,15 @@ def show_topic(oid):
     topic_collection.update({'_id': ObjectId(oid)}, {'$inc': {'click_count': 1}})
     return render_template('frontend/show_topic.html', topic=topic, images=images, rate=rate)
 
+@frontend.route('/image/<oid>/show/')
+def show_image(oid):
+    client = MongoClient()
+    image_collection = client[current_app.config['DB_NAME']][current_app.config['IMAGE_COLLECTION']]
+    image = image_collection.find_one({'_id': ObjectId(oid)})
+    return render_template('frontend/show_image.html', image=image)
 
 @frontend.route('/image/<oid>/')
-def show_image(oid):
+def send_image(oid):
     client = MongoClient()
     image_collection = client[current_app.config['DB_NAME']][current_app.config['IMAGE_COLLECTION']]
     image = image_collection.find_one({'_id': ObjectId(oid)})
@@ -115,7 +121,7 @@ def show_image(oid):
     return send_from_directory(directory, filename)
 
 
-@frontend.route('/image/<oid>/_discard/', methods=['GET'])
+@frontend.route('/image/<oid>/_discard/', methods=['POST'])
 def discard_image(oid):
     client = MongoClient()
     image_collection = client[current_app.config['DB_NAME']][current_app.config['IMAGE_COLLECTION']]
