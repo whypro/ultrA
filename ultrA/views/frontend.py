@@ -40,14 +40,17 @@ def show_all_topics(tag=None):
         condition['tags'] = tag
     topics = topic_collection.find(
         condition,
-        {'title': True, 'images': True}
+        {'title': True, 'images': True, 'tags': True}
     ).sort([
         #('click_count', 1),
         ('rate', 1),
         ('_id', -1)
     ]).limit(50)
 
-    return render_template('frontend/list_topics.html', topics=topics, tags=tags)
+    return render_template(
+        'frontend/list_topics.html',
+        topics=[dict(_id=str(topic['_id']), title=topic['title'], cover=str(topic['images'][0]), size=len(topic['images']), tag=topic['tags'][0]) for topic in topics],
+    )
 
 
 @frontend.route('/_topic/')
@@ -61,7 +64,7 @@ def get_topics(tag=None):
     if tag:
         condition['tags'] = tag
     topics = topic_collection.find(
-        condition, {'title': True, 'images': True}
+        condition, {'title': True, 'images': True, 'tags': True}
     ).sort([
         ('rate', 1),
         ('_id', -1)
@@ -72,7 +75,7 @@ def get_topics(tag=None):
 
     return jsonify(
         start=start, count=count, total=total,
-        topics=[{'title': topic['title'], 'cover': str(topic['images'][0])} for topic in topics],
+        topics=[dict(_id=str(topic['_id']), title=topic['title'], cover=str(topic['images'][0]), size=len(topic['images']), tag=topic['tags'][0]) for topic in topics],
     )
 
 
