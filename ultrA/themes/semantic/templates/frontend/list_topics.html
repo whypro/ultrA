@@ -7,20 +7,33 @@
     <div class="ui three stackable items">
       {% for topic in topics %}
       <div class="item">
-        <div class="image">
-          <a class="ui image" href="{{ url_for('frontend.show_topic', oid=topic._id) }}">
+        <div class="ui image">
+          <a href="{{ url_for('frontend.show_topic', oid=topic._id) }}">
             <img src="{{ url_for('frontend.send_image', oid=topic.cover) }}" alt="{{ topic.title }}" />
           </a>
-          <div class="floating ui circular red label">{{ topic.size }}</div>
+          <div class="ui right corner green label">
+            <div class="text">{{ topic.size }}</div>
+          </div>
         </div>
         <div class="content">
-          <div class="name"><a class="" href="{{ url_for('frontend.show_topic', oid=topic._id) }}">{{ topic.title }}</a></div>
-
-          <p class="description"></p>
-          <a class="ui purple ribbon label">{{ topic.tag }}</a>
+          <div class="name">
+            <a href="{{ url_for('frontend.show_topic', oid=topic._id) }}">{{ topic.title }}</a>
+          </div>
+          <div class="description">
+            <div class="ui divider"></div>
+            <a href="{{ url_for('.show_all_topics', tag=topic.tag) }}" class="ui purple ribbon label">{{ topic.tag }}</a>
+            <div class="ui heart rating active" data-rating="{{ topic.rating }}">
+              <i class="icon"></i>
+              <i class="icon"></i>
+              <i class="icon"></i>
+              <i class="icon"></i>
+              <i class="icon"></i>
+            </div>
+          </div>
+          
 
         </div>
-        <div class="extra">{{ topic.size }} images</div>
+        {#<div class="extra">{{ topic.size }} images</div>#}
       </div>
       {% endfor %}
     </div>
@@ -28,4 +41,29 @@
   </div>
 </div>
 
+{% endblock %}
+{% block script %}
+<script>
+$("#more").click(function(){
+  // 动态刷新
+  
+  $.get("{{ url_for('.get_topics', tag=tag) }}", {
+      start: 0,
+      count: 20
+    }, function(data) {
+        var topics = "";
+        /* 循环处理 data */
+        for (var index in data.topics) {
+          // alert(data.topics[index].title);
+          topics += data.topics[index].title;
+        }
+        $("#more").before(topics);
+    });
+  
+});
+
+/* 评分模块*/
+$(".rating").rating("disable");
+
+</script>
 {% endblock %}

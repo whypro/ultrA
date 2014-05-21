@@ -2,6 +2,7 @@
 from __future__ import print_function, unicode_literals
 import os
 import shutil
+import re
 from bson.objectid import ObjectId
 from flask import Blueprint, send_from_directory, current_app, abort, redirect
 from flask import url_for, request, jsonify
@@ -40,41 +41,28 @@ def show_all_topics(tag=None):
         condition['tags'] = tag
     topics = topic_collection.find(
         condition,
-        {'title': True, 'images': True, 'tags': True}
+        {'title': True, 'images': True, 'tags': True, 'rate': True}
     ).sort([
         #('click_count', 1),
         ('rate', 1),
         ('_id', -1)
     ]).limit(50)
 
-    return render_template('frontend/list_topics.html', topics=topics_filter(topics),)
-
-
-def topics_filter(origin_topics):
-    topics = []
-    # 重新包装
-    for topic in origin_topics:
-        _id = str(topic['_id'])
-        title = topic['title']
-        size = len(topic['images'])
-        cover = str(topic['images'][0]) if size else ''
-        tag = topic['tags'][0] if len(topic['tags']) else None
-        topics.append(dict(_id=_id, title=title, size=size, cover=cover, tag=tag))
-    return topics
+    return render_template('frontend/list_topics.html', topics=topics_filter(topics), tag=tag)
 
 
 @frontend.route('/_topic/')
 @frontend.route('/_topic/tag/<tag>/')
 def get_topics(tag=None):
-    start = request.args.get('start', 0)
-    count = request.args.get('count', 20)
+    start = int(request.args.get('start', '0'))
+    count = int(request.args.get('count', '20'))
     client = MongoClient()
     topic_collection = client[current_app.config['DB_NAME']][current_app.config['TOPIC_COLLECTION']]
     condition = {'deleted': {'$ne': True}}
     if tag:
         condition['tags'] = tag
     topics = topic_collection.find(
-        condition, {'title': True, 'images': True, 'tags': True}
+        condition, {'title': True, 'images': True, 'tags': True, 'rate': True}
     ).sort([
         ('rate', 1),
         ('_id', -1)
@@ -87,6 +75,33 @@ def get_topics(tag=None):
         start=start, count=count, total=total,
         topics=topics_filter(topics),
     )
+
+
+def topics_filter(origin_topics):
+    topics = []
+    # 重新包装
+    for topic in origin_topics:
+        _id = str(topic['_id'])
+        title = topic['title']
+        size = len(topic['images'])
+        cover = str(topic['images'][0]) if size else ''
+        tag = topic['tags'][0] if len(topic['tags']) else None
+        rating = topic.get('rate', 0)
+        # print(rating)
+        topics.append(dict(_id=_id, title=title, size=size, cover=cover, tag=tag, rating=rating))
+    return topics
+
+
+@frontend.route('/topic/search/')
+def search():
+    key = request.args.get('key')
+    print(key)
+    key_regex = re.compile(key, re.IGNORECASE)
+    client = MongoClient()
+    topic_collection = client[current_app.config['DB_NAME']][current_app.config['TOPIC_COLLECTION']]
+    topics = topic_collection.find({'deleted': {'$ne': True}, 'title': key_regex}).limit(50)
+    return render_template('frontend/list_topics.html', topics=topics_filter(topics))
+
 
 
 @frontend.route('/topic/<oid>/')
@@ -186,4 +201,5 @@ def edit_topic(oid):
     topic_collection.update({'_id': ObjectId(oid)}, {'$set': set_data})
     # topic = topic_collection.find_one({'_id': ObjectId(oid)}, {'title': True, 'rate': True})
     return jsonify(set_data, success=True)
+
 
