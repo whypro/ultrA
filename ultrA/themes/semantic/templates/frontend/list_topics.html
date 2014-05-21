@@ -14,7 +14,7 @@
           <div class="floating ui circular red label">{{ topic.size }}</div>
         </div>
         <div class="content">
-          <div class="name">{{ topic.title }}</div>
+          <div class="name"><a class="" href="{{ url_for('frontend.show_topic', oid=topic._id) }}">{{ topic.title }}</a></div>
 
           <p class="description"></p>
           <a class="ui purple ribbon label">{{ topic.tag }}</a>

@@ -47,10 +47,20 @@ def show_all_topics(tag=None):
         ('_id', -1)
     ]).limit(50)
 
-    return render_template(
-        'frontend/list_topics.html',
-        topics=[dict(_id=str(topic['_id']), title=topic['title'], cover=str(topic['images'][0]), size=len(topic['images']), tag=topic['tags'][0]) for topic in topics],
-    )
+    return render_template('frontend/list_topics.html', topics=topics_filter(topics),)
+
+
+def topics_filter(origin_topics):
+    topics = []
+    # 重新包装
+    for topic in origin_topics:
+        _id = str(topic['_id'])
+        title = topic['title']
+        size = len(topic['images'])
+        cover = str(topic['images'][0]) if size else ''
+        tag = topic['tags'][0] if len(topic['tags']) else None
+        topics.append(dict(_id=_id, title=title, size=size, cover=cover, tag=tag))
+    return topics
 
 
 @frontend.route('/_topic/')
@@ -75,7 +85,7 @@ def get_topics(tag=None):
 
     return jsonify(
         start=start, count=count, total=total,
-        topics=[dict(_id=str(topic['_id']), title=topic['title'], cover=str(topic['images'][0]), size=len(topic['images']), tag=topic['tags'][0]) for topic in topics],
+        topics=topics_filter(topics),
     )
 
 
