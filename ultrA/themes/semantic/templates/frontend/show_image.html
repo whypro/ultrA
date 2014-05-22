@@ -5,7 +5,7 @@
 <div class="ui page grid">
 <div id="discard" class="ui circular small red button">丢弃</div>
   <div class="center align row">
-    <img class="ui image" src="{{ url_for('frontend.send_image', oid=image._id) }}" />
+    <img class="ui image" src="{{ url_for('frontend.send_image', size='origin', oid=image._id) }}" />
   </div>
 	
   <div class="ui horizontal icon divider">

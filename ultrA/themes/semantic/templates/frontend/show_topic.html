@@ -38,7 +38,7 @@
   <div class="ui images">
     {% for image in images %}
     <a class="ui image" href="{{ url_for('frontend.show_image', oid=image._id) }}">
-        <img src="{{ url_for('frontend.send_image', oid=image._id) }}" />
+        <img src="{{ url_for('frontend.send_image', size='large', oid=image._id) }}" />
     </a>
     <div class="ui divider"></div>
     {% endfor %}

@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
-from __future__ import print_function, unicode_literals
+from __future__ import print_function, unicode_literals, division
 import os
 import shutil
 import re
+from StringIO import StringIO
 from bson.objectid import ObjectId
-from flask import Blueprint, send_from_directory, current_app, abort, redirect
+from flask import Blueprint, send_from_directory, current_app, abort, redirect, send_file
 from flask import url_for, request, jsonify
 from pymongo import MongoClient
+from PIL import Image
 from ultrA.helpers import render_template
 
 
@@ -125,25 +127,34 @@ def show_image(oid):
     image = image_collection.find_one({'_id': ObjectId(oid)})
     return render_template('frontend/show_image.html', image=image)
 
-@frontend.route('/image/<oid>/')
-def send_image(oid):
+@frontend.route('/image/<size>/<oid>/')
+def send_image(size, oid):
+    if size not in ('origin', 'large', 'thumb'):
+        abort(404)
     client = MongoClient()
     image_collection = client[current_app.config['DB_NAME']][current_app.config['IMAGE_COLLECTION']]
     image = image_collection.find_one({'_id': ObjectId(oid)})
     if not image:
         abort(404)
     path = os.path.join(current_app.config['MEDIA_PATH'], image['path'])
-    directory = os.path.dirname(path)
-    filename = os.path.basename(path)
-
-    # from PIL import Image
-    # size = 400, 400
-    # im = Image.open(path)
-    # im.thumbnail(size, Image.ANTIALIAS)
-    # im.save('D:\\temp.jpg')
-    # return send_from_directory('D:\\', 'temp.jpg')
-
-    return send_from_directory(directory, filename)
+    # directory = os.path.dirname(path)
+    # filename = os.path.basename(path)
+    if size == 'origin':
+        return send_file(path)
+    else:   # image_type != 'origin'
+        # 生成缩略图
+        size_dict = {
+            'thumb': current_app.config['IMAGE_THUMB'], 
+            'large': current_app.config['IMAGE_LARGE'],
+        }
+        img_io = StringIO()
+        img = Image.open(path)
+        width = size_dict[size]
+        height = (width*img.size[1]) // img.size[0] 
+        img.thumbnail((width, height), Image.ANTIALIAS)
+        img.save(img_io, 'JPEG', quality=70)
+        img_io.seek(0)
+        return send_file(img_io, mimetype='image/jpeg')
 
 
 @frontend.route('/image/<oid>/_discard/', methods=['POST'])
