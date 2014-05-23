@@ -2,10 +2,10 @@
 {% set active_page = 'admin' %}
 {% block title %}管理{% endblock %}
 {% block content %}
-<div class="ui grid">
-  <div class="middle aligned row">
+<div class="ui page stackable grid">
+  <div class="bottom aligned row">
   <div class="four wide column">
-    <div class="ui vertical pointing menu">
+    <div class="ui fluid vertical pointing menu">
       <div class="header item">
         <i class="home icon"></i> 导入主题
       </div>
@@ -28,17 +28,12 @@
     </div>
   </div>
   <div class="twelve wide column">
+    <div id="result" class="ui success message" style="display: none;">
+      <p></p>
+    </div>
     <div class="ui active green striped progress">
       <div id="progress" class="bar"></div>
     </div>
-    {#
-    <div class="ui segment">
-      <p>爱酷学习网是一个免费提供高清在线观看视频教程的网站，这里有各类视频教程，包括Java,.Net,C,C++,Python,Php,iOS,Ruby,Photoshop,Mybats,Spring,SpringMVC,Bootstrap,Semantic UI等视频教程。我们还提供了Android, iOS, Windows Phone客户端，让你在手机等移动设备上也能随时随地观看视频教程。</p>
-      <div class="ui active dimmer">
-        <div class="ui loader"></div>
-      </div>
-    </div>
-    #}
   </div>
   </div>
 </div>
@@ -46,20 +41,33 @@
 {% endblock %}
 {% block script%}
 <script>
+/* 清理主题，显示进度 */
+var timeSet;
 $("#clean").click(function(){
-  $.get("{{ url_for('.clean_topic') }}");
-  set_progress();
-  progress = $("#progress").css("width");
-  if (progress != "100%") {
-    setTimeout(set_progress, 1);
-  }
+  $("#progress").css("width", "0");
+  $("#progress").parent().addClass("active");
+  $.get("{{ url_for('.clean_topic') }}", {}, function(data){
+    // 
+    $("#result p").append("共清理了 "+data.delete+" 个主题！");
+    $('#result').show().transition('tada');
+    // alert("共清理了"+data.delete+"个主题。");
+  });
+  timeSet = setInterval(get_progress, 300);
+
 });
 
-set_progress = function() {
-  $.get("{{ url_for('.get_clean_progress') }}", {}, function(data){
+get_progress = function() {
+  $.get("{{ url_for('.get_clean_progress') }}", {"_": Math.random()}, function(data){
     $("#progress").css("width", data.progress+"%");
+    if (data.progress == "100") {
+      clearInterval(timeSet);
+      $("#progress").parent().removeClass("active");
+    }
   });
 }
+
+
+
 </script>
 {% endblock %}
 

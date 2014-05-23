@@ -3,9 +3,11 @@
 {% block title %}{% endblock %}
 {% block content %}
 <div class="ui page grid">
-<div id="discard" class="ui circular small red button">丢弃</div>
-  <div class="center align row">
-    <img class="ui image" src="{{ url_for('frontend.send_image', size='origin', oid=image._id) }}" />
+  <div id="discard" class="ui circular small red button">丢弃</div>
+  <div class="center aligned row">
+    <div class="column">
+      <div class="ui image"><img src="{{ url_for('frontend.send_image', size='origin', oid=image._id) }}" /></div>
+    </div>
   </div>
 	
   <div class="ui horizontal icon divider">
@@ -13,7 +15,6 @@
   </div>
 
 </div>
-
 
 
 <div class="ui basic small modal">

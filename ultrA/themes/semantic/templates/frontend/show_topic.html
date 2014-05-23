@@ -4,56 +4,56 @@
 {% block content %}
 <div class="ui page grid">
   <div class="center aligned row">
-  <div class="column">
-  <h1 id="title" class="ui header">{{ topic.title }}</h1>
+    <div class="column">
+      <h1 id="title" class="ui header">{{ topic.title }}</h1>
 
-  <div id="title_edit" class="ui form" style="display: none;">
-    <div class="ui two fields">
-      <div class="twelve wide field">
-        <input id="title_input" type="text" value="{{ topic.title }}">
-      </div>
-      <div class="four wide field">
-        <div class="ui buttons">
-          <div id="save" class="ui positive button">保存</div>
-          <div class="or"></div>
-          <div id="cancel" class="ui button">取消</div>
+      <div id="title_edit" class="ui form" style="display: none;">
+        <div class="ui two fields">
+          <div class="twelve wide field">
+            <input id="title_input" type="text" value="{{ topic.title }}">
+          </div>
+          <div class="four wide field">
+            <div class="ui buttons">
+              <div id="save" class="ui positive button">保存</div>
+              <div class="or"></div>
+              <div id="cancel" class="ui button">取消</div>
+            </div>
+          </div>
+
         </div>
+
+
       </div>
 
+      <div id="rating_top" class="ui large heart rating active" data-rating="{{ topic.rate }}">
+        <i class="icon"></i>
+        <i class="icon"></i>
+        <i class="icon"></i>
+        <i class="icon"></i>
+        <i class="icon"></i>
+      </div>
+
+      <div class="ui horizontal divider"><i class="camera icon"></i></div>
+
+      <div class="ui images">
+        {% for image in images %}
+        <a class="ui image" href="{{ url_for('frontend.show_image', oid=image._id) }}">
+            <img src="{{ url_for('frontend.send_image', size='large', oid=image._id) }}" />
+        </a>
+        <div class="ui divider"></div>
+        {% endfor %}
+      </div>
+
+      <div class="ui horizontal icon divider">
+        <i class="circular heart icon"></i>
+      </div>
     </div>
-
-
   </div>
-
-  <div id="rating_top" class="ui large heart rating active" data-rating="{{ topic.rate }}">
-    <i class="icon"></i>
-    <i class="icon"></i>
-    <i class="icon"></i>
-    <i class="icon"></i>
-    <i class="icon"></i>
-  </div>
-
-  <div class="ui horizontal divider"><i class="camera icon"></i></div>
-
-  <div class="ui images">
-    {% for image in images %}
-    <a class="ui image" href="{{ url_for('frontend.show_image', oid=image._id) }}">
-        <img src="{{ url_for('frontend.send_image', size='large', oid=image._id) }}" />
-    </a>
-    <div class="ui divider"></div>
-    {% endfor %}
-  </div>
-
-  <div class="ui horizontal icon divider">
-    <i class="circular heart icon"></i>
-  </div>
-  </div>
-  </div>
-  <div class="two column row">
-    <div class="left aligned column">
+  <div class="middle aligned row">
+    <div class="six wide left aligned column">
       <div id="delete" class="ui circular small red button">删除</div>
     </div>
-    <div class="right aligned column">
+    <div class="ten wide right aligned column">
       <div id="rating_bottom" class="ui large heart rating active" data-rating="{{ topic.rate }}">
         <i class="icon"></i>
         <i class="icon"></i>
