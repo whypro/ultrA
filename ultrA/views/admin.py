@@ -2,7 +2,7 @@
 from __future__ import print_function, unicode_literals, division
 import os
 import hashlib
-from flask import Blueprint, abort, current_app, jsonify
+from flask import Blueprint, abort, current_app, jsonify, current_app
 from pymongo import MongoClient
 from ultrA.helpers import render_template
 from ultrA.views.frontend import delete_topic
@@ -124,6 +124,11 @@ def import_topics_and_images(path, topic_collection, image_collection, option=0)
                                 topic_collection.update({'title': topic}, {'$addToSet': {'images': image_id}})
 
 
+@admin.route('/clean/_progress/')
+def get_clean_progress():
+    return jsonify(progress=current_app.clean_progress)
+
+
 @admin.route('/clean/')
 def clean_topic():
     client = MongoClient()
@@ -139,7 +144,10 @@ def clean_topic():
     discarded_images_sha1 = [discarded_image['sha1'] for discarded_image in discarded_images]
     delete_num = 0
     total_num = topics.count()
-    for topic in topics:
+    current_app.clean_progress = 0
+    for i, topic in enumerate(topics):
+        current_app.clean_progress = int(i/total_num*100)   # 当前进度
+        # print(current_app.clean_progress)
         # print(topic['_id'])
         images = image_collection.find({'_id': {'$in': list(topic['images'])}}, {'sha1': True})
         if not images.count():
@@ -159,5 +167,6 @@ def clean_topic():
             print(topic['_id'])
             delete_num += 1
             delete_topic(topic['_id'])
+    current_app.clean_progress = 100
     return jsonify(delete=delete_num, total=total_num)
     # return 'Clean finished.'

@@ -18,6 +18,7 @@ DB_NAME = 'ultrA'
 # DISCARDED_IMAGE_COLLECTION = 'raw_discarded_image'
 TOPIC_COLLECTION = 'test_topic'
 IMAGE_COLLECTION = 'test_image'
+DISCARDED_IMAGE_COLLECTION = 'test_discarded_image'
 
 
 if 'Windows' in platform.system():

@@ -21,7 +21,7 @@
       </div>
       <div class="item">
         <div class="menu">
-          <a class="item" href="{{ url_for('.clean_topic') }}">清理主题</a>
+          <a id="clean" class="item">清理主题</a>
           <a class="item">清空全部主题</a>
         </div>
       </div>
@@ -29,7 +29,7 @@
   </div>
   <div class="twelve wide column">
     <div class="ui active green striped progress">
-      <div class="bar" style="width: 30%;"></div>
+      <div id="progress" class="bar"></div>
     </div>
     {#
     <div class="ui segment">
@@ -45,6 +45,22 @@
 
 {% endblock %}
 {% block script%}
+<script>
+$("#clean").click(function(){
+  $.get("{{ url_for('.clean_topic') }}");
+  set_progress();
+  progress = $("#progress").css("width");
+  if (progress != "100%") {
+    setTimeout(set_progress, 1);
+  }
+});
+
+set_progress = function() {
+  $.get("{{ url_for('.get_clean_progress') }}", {}, function(data){
+    $("#progress").css("width", data.progress+"%");
+  });
+}
+</script>
 {% endblock %}
 
 

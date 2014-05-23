@@ -140,21 +140,29 @@ def send_image(size, oid):
     # directory = os.path.dirname(path)
     # filename = os.path.basename(path)
     if size == 'origin':
+        print('directly send file.')
         return send_file(path)
     else:   # image_type != 'origin'
         # 生成缩略图
+        img = Image.open(path)
+        # 如果是 GIF，则不处理
+        if img.format == 'GIF':
+            return send_file(path, mimetype='image/'+img.format.lower())
         size_dict = {
             'thumb': current_app.config['IMAGE_THUMB'], 
             'large': current_app.config['IMAGE_LARGE'],
         }
-        img_io = StringIO()
-        img = Image.open(path)
         width = size_dict[size]
         height = (width*img.size[1]) // img.size[0] 
         img.thumbnail((width, height), Image.ANTIALIAS)
-        img.save(img_io, 'JPEG', quality=70)
+        img_io = StringIO()
+        if img.format == 'JPEG':
+            img.save(img_io, img.format, quality=70)
+        else:
+            print(img.format)
+            img.save(img_io, img.format)
         img_io.seek(0)
-        return send_file(img_io, mimetype='image/jpeg')
+        return send_file(img_io, mimetype='image/'+img.format.lower())
 
 
 @frontend.route('/image/<oid>/_discard/', methods=['POST'])
