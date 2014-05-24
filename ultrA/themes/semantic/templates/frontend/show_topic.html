@@ -25,7 +25,7 @@
 
       </div>
 
-      <div id="rating_top" class="ui large heart rating active" data-rating="{{ topic.rate }}">
+      <div id="rating_top" class="ui large heart rating active" data-rating="{{ topic.rating }}">
         <i class="icon"></i>
         <i class="icon"></i>
         <i class="icon"></i>
@@ -34,15 +34,20 @@
       </div>
 
       <div class="ui horizontal divider"><i class="camera icon"></i></div>
-
+      {% if images.count() %}
       <div class="ui images">
         {% for image in images %}
         <a class="ui image" href="{{ url_for('frontend.show_image', oid=image._id) }}">
             <img src="{{ url_for('frontend.send_image', size='large', oid=image._id) }}" />
         </a>
-        <div class="ui divider"></div>
+        {% if not loop.last %}<div class="ui divider"></div>{% endif %}
         {% endfor %}
       </div>
+      {% else %}
+      <div class="ui segments">
+        <p>找不到图片哦</p>
+      </div>
+      {% endif %}
 
       <div class="ui horizontal icon divider">
         <i class="circular heart icon"></i>
@@ -54,7 +59,7 @@
       <div id="delete" class="ui circular tiny red button">删除</div>
     </div>
     <div class="eight wide right aligned column">
-      <div id="rating_bottom" class="ui large heart rating active" data-rating="{{ topic.rate }}">
+      <div id="rating_bottom" class="ui large heart rating active" data-rating="{{ topic.rating }}">
         <i class="icon"></i>
         <i class="icon"></i>
         <i class="icon"></i>
@@ -89,11 +94,11 @@ $("#rating_top").rating("disable");
 
 $("#rating_bottom").rating({
   onRate: function(value){
-    if (value != "{{ topic.rate }}") {
+    if (value != "{{ topic.rating }}") {
       // alert(value);
       $("#rating_top").rating("set rating", value);
       $.post("{{ url_for('.edit_topic', oid=topic._id) }}", {
-        rate: value
+        rating: value
       });
     }
   }

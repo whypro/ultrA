@@ -1,5 +1,5 @@
 <div class="ui purple inverted menu">
-  <a class="active item" href="{{ url_for('frontend.index') }}">
+  <a class="item" href="{{ url_for('frontend.index') }}">
     <i class="home icon"></i>主页
   </a>
   <div class="ui dropdown item">
@@ -10,6 +10,9 @@
         {% endfor %}
     </div>
   </div>
+  <a class="item" href="{{ url_for('frontend.show_hot_topics') }}">
+    <i class="thumbs up icon"></i>热门
+  </a>
   <a class="item" href="{{ url_for('admin.index') }}">
     <i class="user icon"></i>管理
   </a>

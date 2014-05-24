@@ -43,10 +43,10 @@ def show_all_topics(tag=None):
         condition['tags'] = tag
     topics = topic_collection.find(
         condition,
-        {'title': True, 'images': True, 'tags': True, 'rate': True}
+        {'title': True, 'images': True, 'tags': True, 'rating': True}
     ).sort([
         #('click_count', 1),
-        ('rate', 1),
+        ('rating', 1),
         ('_id', -1)
     ]).limit(50)
 
@@ -64,9 +64,9 @@ def get_topics(tag=None):
     if tag:
         condition['tags'] = tag
     topics = topic_collection.find(
-        condition, {'title': True, 'images': True, 'tags': True, 'rate': True}
+        condition, {'title': True, 'images': True, 'tags': True, 'rating': True}
     ).sort([
-        ('rate', 1),
+        ('rating', 1),
         ('_id', -1)
     ]).skip(start).limit(count)
     count = topics.count()
@@ -79,6 +79,21 @@ def get_topics(tag=None):
     )
 
 
+@frontend.route('/topic/hot/')
+def show_hot_topics():
+    client = MongoClient()
+    topic_collection = client[current_app.config['DB_NAME']][current_app.config['TOPIC_COLLECTION']]
+    topics = topic_collection.find(
+        {'deleted': {'$ne': True}},
+        {'title': True, 'images': True, 'tags': True, 'rating': True}
+    ).sort([
+        ('rating', -1),
+        ('click_count', -1)
+    ]).limit(50)
+
+    return render_template('frontend/list_topics.html', topics=topics_filter(topics))
+
+
 def topics_filter(origin_topics):
     topics = []
     # 重新包装
@@ -88,7 +103,7 @@ def topics_filter(origin_topics):
         size = len(topic['images'])
         cover = str(topic['images'][0]) if size else ''
         tag = topic['tags'][0] if len(topic['tags']) else None
-        rating = topic.get('rate', 0)
+        rating = topic.get('rating', 0)
         # print(rating)
         topics.append(dict(_id=_id, title=title, size=size, cover=cover, tag=tag, rating=rating))
     return topics
@@ -114,11 +129,11 @@ def show_topic(oid):
     topic = topic_collection.find_one({'_id': ObjectId(oid)})
     if not topic:
         abort(404)
-    rate = topic.get('rate')
+    rating = topic.get('rating')
     images = image_collection.find({'_id': {'$in': list(topic['images'])}})
     print(images.count())
     topic_collection.update({'_id': ObjectId(oid)}, {'$inc': {'click_count': 1}})
-    return render_template('frontend/show_topic.html', topic=topic, images=images, rate=rate)
+    return render_template('frontend/show_topic.html', topic=topic, images=images, rating=rating)
 
 @frontend.route('/image/<oid>/show/')
 def show_image(oid):
@@ -147,8 +162,9 @@ def send_image(size, oid):
         f = open(path, 'rb')
         try:
             img = Image.open(f)
-        finally:
+        except IOError:
             f.close()
+            raise
         # 如果是 GIF，则不处理
         if img.format == 'GIF':
             return send_file(path, mimetype='image/'+img.format.lower())
@@ -165,6 +181,7 @@ def send_image(size, oid):
         else:
             print(img.format)
             img.save(img_io, img.format)
+        f.close()
         img_io.seek(0)
         return send_file(img_io, mimetype='image/'+img.format.lower())
 
@@ -206,11 +223,11 @@ def delete_topic(oid):
 @frontend.route('/topic/<oid>/_edit/', methods=['POST'])
 def edit_topic(oid):
     title = request.form.get('title')
-    rate = request.form.get('rate')
+    rating = request.form.get('rating')
     
-    if rate in ('1', '2', '3', '4', '5'):
-        rate = int(rate)
-    elif rate:
+    if rating in ('1', '2', '3', '4', '5'):
+        rating = int(rating)
+    elif rating:
         abort(400)
 
     client = MongoClient()
@@ -218,11 +235,11 @@ def edit_topic(oid):
     set_data = {}
     if title:
         set_data['title'] = title
-    if rate:
-        set_data['rate'] = rate
+    if rating:
+        set_data['rating'] = rating
     print(set_data)
     topic_collection.update({'_id': ObjectId(oid)}, {'$set': set_data})
-    # topic = topic_collection.find_one({'_id': ObjectId(oid)}, {'title': True, 'rate': True})
+    # topic = topic_collection.find_one({'_id': ObjectId(oid)}, {'title': True, 'rating': True})
     return jsonify(set_data, success=True)
 
 
