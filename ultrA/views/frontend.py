@@ -144,7 +144,11 @@ def send_image(size, oid):
         return send_file(path)
     else:   # image_type != 'origin'
         # 生成缩略图
-        img = Image.open(path)
+        f = open(path, 'rb')
+        try:
+            img = Image.open(f)
+        finally:
+            f.close()
         # 如果是 GIF，则不处理
         if img.format == 'GIF':
             return send_file(path, mimetype='image/'+img.format.lower())
