@@ -130,8 +130,45 @@ def get_clean_progress():
     return jsonify(progress=current_app.clean_progress)
 
 
+@admin.route('/garbage/')
+def show_garbage():
+    """
+    清理主题：将所有无关图片加入黑名单内，循环搜索每个主题，
+    若该主题内黑名单图片的比例大于某阈值，则删除该主题以及主题下所有的图片。
+    """
+    threshold = 0.6
+    client = MongoClient()
+    topic_collection = client[current_app.config['DB_NAME']][current_app.config['TOPIC_COLLECTION']]
+    image_collection = client[current_app.config['DB_NAME']][current_app.config['IMAGE_COLLECTION']]
+    garbage_image_collection = client[current_app.config['DB_NAME']][current_app.config['GARBAGE_IMAGE_COLLECTION']]
+
+    # 如果一个 topic 内图片个数为 0，则删除 topic
+    garbage_topics = list(topic_collection.find({'images': []}))
+    
+    # 如果一个 topic 内包含的 garbage_image 数大于图片个数的 1/X，删除 topic 和图片
+    topics = topic_collection.find({'deleted': {'$ne': True}})
+    garbage_images = garbage_image_collection.find({})
+    garbage_images_sha1 = [garbage_image['sha1'] for garbage_image in garbage_images]
+    for topic in topics:
+        images = image_collection.find({'_id': {'$in': list(topic['images'])}}, {'sha1': True})
+        if not images.count():
+            # 如果主题已没有图片，直接标记为已删除
+            garbage_topics.append(topic)
+            continue
+        images_sha1 = [image['sha1'] for image in images]
+        garbage_count = 0
+        for image_sha1 in images_sha1:
+            if image_sha1 in garbage_images_sha1:
+                garbage_count += 1
+        if garbage_count / len(images_sha1) > threshold:
+            print(topic['_id'])
+            garbage_topics.append(topic)
+    # return jsonify(delete=delete_num, total=total_num)
+    # return 'Clean finished.'
+    return render_template('admin/list_topics.html', topics=garbage_topics)
+
 @admin.route('/clean/')
-def clean_topic():
+def clean_topics():
     """
     清理主题：将所有无关图片加入黑名单内，循环搜索每个主题，
     若该主题内黑名单图片的比例大于某阈值，则删除该主题以及主题下所有的图片。
@@ -235,7 +272,7 @@ def show_omissions():
     client = MongoClient()
     topic_collection = client[current_app.config['DB_NAME']][current_app.config['TOPIC_COLLECTION']]
     image_collection = client[current_app.config['DB_NAME']][current_app.config['IMAGE_COLLECTION']]
-    topics = topic_collection.find()
+    topics = topic_collection.find({})
     problem_topics = []
     for topic in topics:
         if len(set(topic['images'])) != len(topic['images']):
@@ -243,3 +280,11 @@ def show_omissions():
             problem_topics.append(topic)
             # delete_topic_(topic['_id'], physical_removal=True, remove_images=True)
     return render_template('admin/list_topics.html', topics=problem_topics)
+
+@admin.route('/all/')
+def show_all():
+    client = MongoClient()
+    topic_collection = client[current_app.config['DB_NAME']][current_app.config['TOPIC_COLLECTION']]
+    image_collection = client[current_app.config['DB_NAME']][current_app.config['IMAGE_COLLECTION']]
+    topics = topic_collection.find({})
+    return render_template('admin/list_topics.html', topics=list(topics))

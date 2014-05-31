@@ -1,81 +1,45 @@
-{% extends theme('layout.html') %}
-{% set active_page = 'admin' %}
+{% extends theme('admin/layout.html') %}
 {% block title %}管理{% endblock %}
-{% block content %}
-<div class="ui stackable grid">
-  <div class="top aligned row">
-  <div class="three wide column">
-  {% include theme('admin/sidebar.html') %}
-  </div>
-  <div class="thirteen wide column">
-    <table class="ui table segment">
-      <thead>
-        <tr>
-          <th>标题</th>
-          <th>状态</th>
-          <th>备注</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for topic in topics %}
-        <tr>
-          <td>
-            <a href="{{ url_for('frontend.show_topic', oid=topic._id) }}">{{ topic.title }}</a>
-          </td>
-          {% if topic.deleted %}
-          <td class="negative">已删除</td>
-          {% else %}
-          <td class="positive">正常</td>
-          {% endif %}
-          
-          <td>无</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-      <tfoot>
-        <tr>
-          <th>
-            {{ topics|length }}个主题
-          </th>
-          <th>
-          
-          </th>
-        </tr>
-      </tfoot>
-    </table>
-  </div>
-  </div>
-</div>
+{% block admin_content %}
+<table class="ui table segment">
+  <thead>
+    <tr>
+      <th>标题</th>
+      <th>状态</th>
+      <th>备注</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for topic in topics %}
+    <tr>
+      <td>
+        <a href="{{ url_for('frontend.show_topic', oid=topic._id) }}">{{ topic.title }}</a>
+      </td>
+      {% if topic.deleted %}
+      <td class="negative">已删除</td>
+      {% else %}
+      <td class="positive">正常</td>
+      {% endif %}
+      
+      <td>无</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+  <tfoot>
+    <tr>
+      <th>
+        {{ topics|length }}个主题
+      </th>
+      <th>
+      
+      </th>
+    </tr>
+  </tfoot>
+</table>
 
 {% endblock %}
 {% block script%}
 <script>
-/* 清理主题，显示进度 */
-var timeSet;
-$("#clean").click(function(){
-  $("#progress").css("width", "0");
-  $("#progress").parent().addClass("active");
-  $.get("{{ url_for('.clean_topic') }}", {}, function(data){
-    // 
-    $("#result p").append("共清理了 "+data.delete+" 个主题！");
-    $('#result').show().transition('tada');
-    // alert("共清理了"+data.delete+"个主题。");
-  });
-  timeSet = setInterval(get_progress, 300);
-
-});
-
-get_progress = function() {
-  $.get("{{ url_for('.get_clean_progress') }}", {"_": Math.random()}, function(data){
-    $("#progress").css("width", data.progress+"%");
-    if (data.progress == "100") {
-      clearInterval(timeSet);
-      $("#progress").parent().removeClass("active");
-    }
-  });
-}
-
-
 
 </script>
 {% endblock %}

@@ -10,12 +10,13 @@
     </div>
   </div>
   <div class="header item">
-    <i class="mail icon"></i> 清理主题
+    <i class="mail icon"></i> 管理主题
   </div>
   <div class="item">
     <div class="menu">
-      <a id="clean" class="item">清理垃圾主题</a>
-      <a class="item" href="{{ url_for('admin.show_omissions') }}">清理遗漏主题</a>
+      <a class="item" href="{{ url_for('admin.show_all') }}">管理全部主题</a>
+      <a class="item" href="{{ url_for('admin.show_garbage') }}">管理垃圾主题</a>
+      <a class="item" href="{{ url_for('admin.show_omissions') }}">管理遗漏主题</a>
       <a class="item">清空全部主题</a>
     </div>
   </div>

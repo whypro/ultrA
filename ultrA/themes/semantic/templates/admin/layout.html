@@ -1,0 +1,21 @@
+{% extends theme('layout.html') %}
+{% set active_page = 'admin' %}
+{% block title %}管理{% endblock %}
+{% block content %}
+<div class="ui stackable grid">
+  <div class="top aligned row">
+  <div class="three wide column">
+  {% include theme('admin/sidebar.html') %}
+  </div>
+  <div class="twelve wide column">
+    {% block admin_content %}{% endblock %}
+  </div>
+  </div>
+</div>
+{% endblock %}
+
+
+
+
+
+
