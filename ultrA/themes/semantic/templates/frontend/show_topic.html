@@ -55,9 +55,14 @@
     </div>
   </div>
   <div class="middle aligned row">
-    <div class="four wide left aligned column">
+    <div class="two wide left aligned column">
       <div id="delete" class="ui circular tiny red button">删除</div>
     </div>
+    <div class="two wide left aligned column">
+      <a class="ui circular tiny blue button" href="{{ topic.url }}">查看原帖</a>
+    </div>
+
+
     <div class="eight wide right aligned column">
       <div id="rating_bottom" class="ui large heart rating active" data-rating="{{ topic.rating }}">
         <i class="icon"></i>
@@ -75,13 +80,25 @@
   <div class="header">真的要删除吗？</div>
   <div class="content">
     删除后将不可恢复。
+    
     <div class="actions">
+
+      <div class="ui inverted checkbox">
+        <input type="checkbox" id="physical_removal" />
+        <label>删除数据库中的记录</label>
+      </div>
+      <div class="ui inverted checkbox">
+        <input type="checkbox" id="remove_images" checked />
+        <label>删除主题下的图片</label>
+      </div>
+
       <div class="ui circular tiny positive icon button">
         <i class="checkmark icon"></i>
       </div>
       <div class="ui circular tiny negative icon button">
         <i class="remove icon"></i>
       </div>
+
     </div>
   </div>
 </div>
@@ -89,6 +106,9 @@
 {% endblock %}
 {% block script%}
 <script>
+/* 复选框初始化 */
+$('.ui.checkbox').checkbox();
+
 /* 评分模块*/
 $("#rating_top").rating("disable");
 
@@ -135,8 +155,12 @@ $("#delete").click(function(){
   $('.modal').modal('setting', {
     closable  : false,
     onApprove : function() {
-      $.post("{{ url_for('.delete_topic', oid=topic._id) }}", null, function(data) {
-            history.go(-1);
+      post_data = {
+        'physical_removal': $("#physical_removal").prop('checked'),
+        'remove_images': $("#remove_images").prop('checked')
+      }
+      $.post("{{ url_for('.delete_topic', oid=topic._id) }}", post_data, function(data) {
+             history.go(-1);
       });
     }
   }).modal('show');

@@ -205,8 +205,17 @@ def discard_image(oid):
 
 @frontend.route('/topic/<oid>/_delete/', methods=['POST'])
 def delete_topic(oid):
-    physical_removal = request.form.get('physical_removal')
-    remove_images = request.form.get('remove_images')
+    # 获取删除参数
+    if request.form.get('physical_removal') == 'true':
+        physical_removal = True
+    else:
+        physical_removal = False
+    if request.form.get('remove_images') == 'true':
+        remove_images = True
+    else:
+        remove_images = False
+
+    print(physical_removal, remove_images)
     delete_topic_(oid, physical_removal, remove_images)
     return jsonify({})
 
