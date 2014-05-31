@@ -2,6 +2,7 @@
 from __future__ import print_function, unicode_literals, division
 import os
 import hashlib
+from time import clock
 from flask import Blueprint, abort, current_app, jsonify, current_app
 from pymongo import MongoClient
 from ultrA.helpers import render_template
@@ -131,17 +132,22 @@ def get_clean_progress():
 
 @admin.route('/clean/')
 def clean_topic():
+    """
+    清理主题：将所有无关图片加入黑名单内，循环搜索每个主题，
+    若该主题内黑名单图片的比例大于某阈值，则删除该主题以及主题下所有的图片。
+    """
+    threshold = 0.6
     client = MongoClient()
     topic_collection = client[current_app.config['DB_NAME']][current_app.config['TOPIC_COLLECTION']]
     image_collection = client[current_app.config['DB_NAME']][current_app.config['IMAGE_COLLECTION']]
-    discarded_image_collection = client[current_app.config['DB_NAME']][current_app.config['DISCARDED_IMAGE_COLLECTION']]
+    garbage_image_collection = client[current_app.config['DB_NAME']][current_app.config['GARBAGE_IMAGE_COLLECTION']]
     # 如果一个 topic 内图片个数为 0，则删除 topic
     topic_collection.update({'images': []}, {'$set': {'deleted': True}}, multi=True)
 
-    # 如果一个 topic 内包含的 discarded_image 数大于图片个数的 1/X，删除 topic 和图片
+    # 如果一个 topic 内包含的 garbage_image 数大于图片个数的 1/X，删除 topic 和图片
     topics = topic_collection.find({'deleted': {'$ne': True}}, {'images': True})
-    discarded_images = discarded_image_collection.find({})
-    discarded_images_sha1 = [discarded_image['sha1'] for discarded_image in discarded_images]
+    garbage_images = garbage_image_collection.find({})
+    garbage_images_sha1 = [garbage_image['sha1'] for garbage_image in garbage_images]
     delete_num = 0
     total_num = topics.count()
     current_app.clean_progress = 0
@@ -159,14 +165,66 @@ def clean_topic():
         # print(set(discarded_images_sha1))
         # print(set(images_sha1).intersection(set(discarded_images_sha1)))
         # print(len(set(images_sha1).intersection(set(discarded_images_sha1))) / len(images_sha1))
-        discarded_count = 0
+        garbage_count = 0
         for image_sha1 in images_sha1:
-            if image_sha1 in discarded_images_sha1:
-                discarded_count += 1
-        if discarded_count / len(images_sha1) > 0.6:
+            if image_sha1 in garbage_images_sha1:
+                garbage_count += 1
+        if garbage_count / len(images_sha1) > threshold:
             print(topic['_id'])
             delete_num += 1
             delete_topic(topic['_id'])
     current_app.clean_progress = 100
     return jsonify(delete=delete_num, total=total_num)
     # return 'Clean finished.'
+
+@admin.route('/duplicate/')
+def clear_duplicates():
+    """
+    清理重复主题：在数据库中搜索包含相同图片的主题，
+    可分为三种情况：
+    1 A 的图片数量等于 B 的图片数量；
+    1.1 A.images 包含 B.images
+
+    # 1.1 求 A 与 B 的交集，若交集图片数量等于 A 或 B 图片的数量
+    # ，或者交集图片数量大于某阈值时，则两主题相似；
+    # 2 A 的图片数量小于或大于 B 的图片数量；
+    # 2.1 A 与 B 的交集
+    # 2. A 相等于 B
+    # 3. B 真包含 A
+    # 4. A 与 B 的交集图片数量大于某阈值
+    """
+
+
+    # 1 if 主题内 images 的 id 完全相同（爬虫时的 BUG），仅删除主题，不删除图片
+    # 2 elif 主题内 images 的 path 完全相同，删除主题和主题相关的图片
+    # 3 elif 主题内 images 的 sha1 完全相同，删除主题和主题相关的图片
+    client = MongoClient()
+    topic_collection = client[current_app.config['DB_NAME']][current_app.config['TOPIC_COLLECTION']]
+    image_collection = client[current_app.config['DB_NAME']][current_app.config['IMAGE_COLLECTION']]
+    topics = topic_collection.find({'deleted': {'$ne': True}}, {'images': True})
+    duplicates = []
+    total_num = topics.count()
+    begin = clock()
+    # topic_ids = [topic['_id'] for topic in topics]
+    # for i, topic_id in enumerate(topic_ids):
+    #     topic = topic_collection.find_one({'_id': topic_id})
+    #     for image_oid in topic['images']:
+    #         image = image_collection.find_one({'_id': image_oid})
+    #         image['sha1']
+    #     duplicate_topics = topic_collection.find({'_id': {'$in': topic_ids}, 'deleted': {'$ne': True}, 'images': list(topic['images'])}, {'title': True})
+    #     if duplicate_topics.count() > 1:
+    #         print('%d/%d: %d' % (i, total_num, duplicate_topics.count()))
+    #         print(len(topic_ids))
+    #         duplicates.append(list(duplicate_topics))
+    #     for duplicate_topic in duplicate_topics:    
+    #         topic_ids.remove(duplicate_topic['_id'])
+        
+
+    for i, topic in enumerate(topics):
+        duplicate_topics = topic_collection.find({'deleted': {'$ne': True}, 'images': list(topic['images'])}, {'title': True, 'create_time': True})
+        if duplicate_topics.count() > 1:
+            print('%d/%d: %d' % (i, total_num, duplicate_topics.count()))
+            duplicates.append(list(duplicate_topics))
+    end = clock()
+    print(end-begin)
+    return render_template('admin/duplicate.html', duplicates=duplicates)

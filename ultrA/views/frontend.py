@@ -17,11 +17,8 @@ frontend = Blueprint('frontend', __name__)
 
 @frontend.route('/favicon.ico')
 def favicon():
-    return send_from_directory(
-        'static',
-        'favicon.ico',
-        mimetype='image/vnd.microsoft.icon'
-    )
+    # return send_from_directory('static', 'favicon.ico')
+    return send_file('static/favicon.ico')
 
 
 @frontend.route('/')
@@ -126,6 +123,7 @@ def show_topic(oid):
     client = MongoClient()
     topic_collection = client[current_app.config['DB_NAME']][current_app.config['TOPIC_COLLECTION']]
     image_collection = client[current_app.config['DB_NAME']][current_app.config['IMAGE_COLLECTION']]
+    garbage_image_collection = client[current_app.config['DB_NAME']][current_app.config['GARBAGE_IMAGE_COLLECTION']]
     topic = topic_collection.find_one({'_id': ObjectId(oid)})
     if not topic:
         abort(404)
@@ -133,6 +131,15 @@ def show_topic(oid):
     images = image_collection.find({'_id': {'$in': list(topic['images'])}})
     print(images.count())
     topic_collection.update({'_id': ObjectId(oid)}, {'$inc': {'click_count': 1}})
+    # 为游标增加字段
+    print(images.count())
+    images = list(images)
+    for image in images:
+        if garbage_image_collection.find_one({'sha1': image['sha1']}):
+            image['garbage'] = True
+        else: 
+            image['garbage'] = False
+    print(len(images))
     return render_template('frontend/show_topic.html', topic=topic, images=images, rating=rating)
 
 @frontend.route('/image/<oid>/show/')
@@ -190,11 +197,11 @@ def send_image(size, oid):
 def discard_image(oid):
     client = MongoClient()
     image_collection = client[current_app.config['DB_NAME']][current_app.config['IMAGE_COLLECTION']]
-    discarded_image_collection = client[current_app.config['DB_NAME']][current_app.config['DISCARDED_IMAGE_COLLECTION']]
+    garbage_image_collection = client[current_app.config['DB_NAME']][current_app.config['GARBAGE_IMAGE_COLLECTION']]
     image = image_collection.find_one({'_id': ObjectId(oid)})
     if not image:
         return jsonify(error=404)
-    discarded_image_collection.update({'sha1': image['sha1']}, {'sha1': image['sha1']}, upsert=True)
+    garbage_image_collection.update({'sha1': image['sha1']}, {'sha1': image['sha1']}, upsert=True)
     return jsonify({})
 
 @frontend.route('/topic/<oid>/_delete/', methods=['POST'])
