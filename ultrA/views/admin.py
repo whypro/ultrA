@@ -6,7 +6,7 @@ from time import clock
 from flask import Blueprint, abort, current_app, jsonify, current_app
 from pymongo import MongoClient
 from ultrA.helpers import render_template
-from ultrA.views.frontend import delete_topic
+from ultrA.views.frontend import delete_topic_
 
 admin = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -172,7 +172,7 @@ def clean_topic():
         if garbage_count / len(images_sha1) > threshold:
             print(topic['_id'])
             delete_num += 1
-            delete_topic(topic['_id'])
+            delete_topic_(topic['_id'])
     current_app.clean_progress = 100
     return jsonify(delete=delete_num, total=total_num)
     # return 'Clean finished.'
@@ -228,3 +228,18 @@ def clear_duplicates():
     end = clock()
     print(end-begin)
     return render_template('admin/duplicate.html', duplicates=duplicates)
+
+
+@admin.route('/omission/')
+def show_omissions():
+    client = MongoClient()
+    topic_collection = client[current_app.config['DB_NAME']][current_app.config['TOPIC_COLLECTION']]
+    image_collection = client[current_app.config['DB_NAME']][current_app.config['IMAGE_COLLECTION']]
+    topics = topic_collection.find()
+    problem_topics = []
+    for topic in topics:
+        if len(set(topic['images'])) != len(topic['images']):
+            # print(topic['title'])
+            problem_topics.append(topic)
+            # delete_topic_(topic['_id'], physical_removal=True, remove_images=True)
+    return render_template('admin/list_topics.html', topics=problem_topics)

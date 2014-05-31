@@ -132,7 +132,6 @@ def show_topic(oid):
     print(images.count())
     topic_collection.update({'_id': ObjectId(oid)}, {'$inc': {'click_count': 1}})
     # 为游标增加字段
-    print(images.count())
     images = list(images)
     for image in images:
         if garbage_image_collection.find_one({'sha1': image['sha1']}):
@@ -206,6 +205,13 @@ def discard_image(oid):
 
 @frontend.route('/topic/<oid>/_delete/', methods=['POST'])
 def delete_topic(oid):
+    physical_removal = request.form.get('physical_removal')
+    remove_images = request.form.get('remove_images')
+    delete_topic_(oid, physical_removal, remove_images)
+    return jsonify({})
+
+
+def delete_topic_(oid, physical_removal=False, remove_images=True):
     # remove_local = request.form.get('remove_local')
     client = MongoClient()
     topic_collection = client[current_app.config['DB_NAME']][current_app.config['TOPIC_COLLECTION']]
@@ -213,18 +219,21 @@ def delete_topic(oid):
     topic = topic_collection.find_one({'_id': ObjectId(oid)})
     if not topic:
         return jsonify(error=404)
-    first_image = image_collection.find_one({'_id': {'$in': topic['images']}})
-    # 删除图片目录
-    if first_image:
-        topic_path = os.path.dirname(os.path.join(current_app.config['MEDIA_PATH'], first_image['path']))
-        print(topic_path)
-        if os.path.exists(topic_path):
-            shutil.rmtree(topic_path)
-    # 删除所有图片
-    image_collection.remove({'_id': {'$in': topic['images']}})
-    # 标记主题为已删除
-    topic_collection.update({'_id': ObjectId(oid)}, {'$set': {'deleted': True}})
-    return jsonify({})
+    if remove_images:
+        first_image = image_collection.find_one({'_id': {'$in': topic['images']}})
+        # 删除图片目录
+        if first_image:
+            topic_path = os.path.dirname(os.path.join(current_app.config['MEDIA_PATH'], first_image['path']))
+            print(topic_path)
+            if os.path.exists(topic_path):
+                shutil.rmtree(topic_path)
+        # 删除所有图片
+        image_collection.remove({'_id': {'$in': topic['images']}})
+    if physical_removal:
+        topic_collection.remove({'_id': ObjectId(oid)})
+    else:
+        # 标记主题为已删除
+        topic_collection.update({'_id': ObjectId(oid)}, {'$set': {'deleted': True}})
 
 
 @frontend.route('/topic/<oid>/_edit/', methods=['POST'])

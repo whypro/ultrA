@@ -3,17 +3,46 @@
 {% block title %}管理{% endblock %}
 {% block content %}
 <div class="ui stackable grid">
-  <div class="bottom aligned row">
+  <div class="top aligned row">
   <div class="three wide column">
   {% include theme('admin/sidebar.html') %}
   </div>
-  <div class="twelve wide column">
-    <div id="result" class="ui success message" style="display: none;">
-      <p></p>
-    </div>
-    <div class="ui active green striped progress">
-      <div id="progress" class="bar"></div>
-    </div>
+  <div class="thirteen wide column">
+    <table class="ui table segment">
+      <thead>
+        <tr>
+          <th>标题</th>
+          <th>状态</th>
+          <th>备注</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for topic in topics %}
+        <tr>
+          <td>
+            <a href="{{ url_for('frontend.show_topic', oid=topic._id) }}">{{ topic.title }}</a>
+          </td>
+          {% if topic.deleted %}
+          <td class="negative">已删除</td>
+          {% else %}
+          <td class="positive">正常</td>
+          {% endif %}
+          
+          <td>无</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr>
+          <th>
+            {{ topics|length }}个主题
+          </th>
+          <th>
+          
+          </th>
+        </tr>
+      </tfoot>
+    </table>
   </div>
   </div>
 </div>
