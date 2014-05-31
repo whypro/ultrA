@@ -22,7 +22,7 @@ def import_all(option):
         abort(404)
     
     path = current_app.config['MEDIA_PATH']
-    client = MongoClient()
+    client = MongoClient(tz_aware=True)
     topic_collection = client[current_app.config['DB_NAME']][current_app.config['TOPIC_COLLECTION']]
     image_collection = client[current_app.config['DB_NAME']][current_app.config['IMAGE_COLLECTION']]
     import_topics_and_images(path, topic_collection, image_collection, option)
@@ -32,7 +32,7 @@ def import_all(option):
 
 @admin.route('/remove/')
 def remove_all():
-    client = MongoClient()
+    client = MongoClient(tz_aware=True)
     topic_collection = client[current_app.config['DB_NAME']][current_app.config['TOPIC_COLLECTION']]
     image_collection = client[current_app.config['DB_NAME']][current_app.config['IMAGE_COLLECTION']]
     topic_collection.remove()
@@ -137,7 +137,7 @@ def show_garbage():
     若该主题内黑名单图片的比例大于某阈值，则删除该主题以及主题下所有的图片。
     """
     threshold = 0.6
-    client = MongoClient()
+    client = MongoClient(tz_aware=True)
     topic_collection = client[current_app.config['DB_NAME']][current_app.config['TOPIC_COLLECTION']]
     image_collection = client[current_app.config['DB_NAME']][current_app.config['IMAGE_COLLECTION']]
     garbage_image_collection = client[current_app.config['DB_NAME']][current_app.config['GARBAGE_IMAGE_COLLECTION']]
@@ -269,7 +269,7 @@ def clear_duplicates():
 
 @admin.route('/omission/')
 def show_omissions():
-    client = MongoClient()
+    client = MongoClient(tz_aware=True)
     topic_collection = client[current_app.config['DB_NAME']][current_app.config['TOPIC_COLLECTION']]
     image_collection = client[current_app.config['DB_NAME']][current_app.config['IMAGE_COLLECTION']]
     topics = topic_collection.find({})
@@ -283,7 +283,7 @@ def show_omissions():
 
 @admin.route('/all/')
 def show_all():
-    client = MongoClient()
+    client = MongoClient(tz_aware=True)
     topic_collection = client[current_app.config['DB_NAME']][current_app.config['TOPIC_COLLECTION']]
     image_collection = client[current_app.config['DB_NAME']][current_app.config['IMAGE_COLLECTION']]
     topics = topic_collection.find({})

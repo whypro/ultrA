@@ -4,24 +4,42 @@
 <table class="ui table segment">
   <thead>
     <tr>
-      <th>标题</th>
-      <th>状态</th>
-      <th>备注</th>
+      <th class="six wide">标题</th>
+      <th class="one wide">图片</th>
+      <th class="two wide">标签</th>
+      <th class="one wide">状态</th>
+      <th class="two wide">创建时间</th>
+      <th class="two wide">评分</th>
+      <th class="one wide">热度</th>
+      <th class="one wide">原帖</th>
     </tr>
   </thead>
   <tbody>
     {% for topic in topics %}
     <tr>
       <td>
-        <a href="{{ url_for('frontend.show_topic', oid=topic._id) }}">{{ topic.title }}</a>
+        <a href="{{ url_for('frontend.show_topic', oid=topic._id) }}">{{ topic.title|truncate(20, True) }}</a>
       </td>
+      <td>{{ topic.images|length }}</td>
+      <td>{{ ' '.join(topic.tags) }}</td>
       {% if topic.deleted %}
-      <td class="negative">已删除</td>
+      <td class="negative">删除</td>
       {% else %}
       <td class="positive">正常</td>
       {% endif %}
       
-      <td>无</td>
+      <td>{{ topic.create_time.strftime("%Y-%m-%d") if topic.create_time}}</td>
+      <td>
+        <div class="ui heart rating active" data-rating="{{ topic.rating }}">
+          <i class="icon"></i>
+          <i class="icon"></i>
+          <i class="icon"></i>
+          <i class="icon"></i>
+          <i class="icon"></i>
+        </div>
+      </td>
+      <td>{{ topic.click_count }}</td>
+      <td><a href="{{ topic.url }}">访问</a></td>
     </tr>
     {% endfor %}
   </tbody>
@@ -40,7 +58,8 @@
 {% endblock %}
 {% block script%}
 <script>
-
+/* 评分模块*/
+$(".rating").rating("disable");
 </script>
 {% endblock %}
 
