@@ -3,7 +3,7 @@ from __future__ import print_function, unicode_literals, division
 import os
 import hashlib
 from time import clock
-from flask import Blueprint, abort, current_app, jsonify, current_app
+from flask import Blueprint, abort, current_app, jsonify, redirect, url_for
 from pymongo import MongoClient
 from ultrA.helpers import render_template
 from ultrA.views.frontend import delete_topic_
@@ -130,11 +130,11 @@ def get_clean_progress():
     return jsonify(progress=current_app.clean_progress)
 
 
-@admin.route('/garbage/')
-def show_garbage():
+@admin.route('/garbage/check/')
+def check_garbage():
     """
     清理主题：将所有无关图片加入黑名单内，循环搜索每个主题，
-    若该主题内黑名单图片的比例大于某阈值，则删除该主题以及主题下所有的图片。
+    若该主题内黑名单图片的比例大于某阈值，则将主题 garbage 标记为 True。
     """
     threshold = 0.6
     client = MongoClient(tz_aware=True)
@@ -142,18 +142,18 @@ def show_garbage():
     image_collection = client[current_app.config['DB_NAME']][current_app.config['IMAGE_COLLECTION']]
     garbage_image_collection = client[current_app.config['DB_NAME']][current_app.config['GARBAGE_IMAGE_COLLECTION']]
 
-    # 如果一个 topic 内图片个数为 0，则删除 topic
-    garbage_topics = list(topic_collection.find({'images': []}))
+    # 如果一个 topic 内图片个数为 0，直接标记
+    topic_collection.update({'images': [], 'deleted': {'$ne': True}, 'garbage': {'$ne': True}}, {'$set': {'garbage': True}})
     
     # 如果一个 topic 内包含的 garbage_image 数大于图片个数的 1/X，删除 topic 和图片
-    topics = topic_collection.find({'deleted': {'$ne': True}})
+    topics = topic_collection.find({'deleted': {'$ne': True}, 'garbage': {'$ne': True}})
     garbage_images = garbage_image_collection.find({})
     garbage_images_sha1 = [garbage_image['sha1'] for garbage_image in garbage_images]
     for topic in topics:
         images = image_collection.find({'_id': {'$in': list(topic['images'])}}, {'sha1': True})
         if not images.count():
-            # 如果主题已没有图片，直接标记为已删除
-            garbage_topics.append(topic)
+            # 如果主题已没有图片，直接标记 garbage
+            topic_collection.update({'_id': topic['_id']}, {'$set': {'garbage': True}})
             continue
         images_sha1 = [image['sha1'] for image in images]
         garbage_count = 0
@@ -161,58 +161,29 @@ def show_garbage():
             if image_sha1 in garbage_images_sha1:
                 garbage_count += 1
         if garbage_count / len(images_sha1) > threshold:
-            print(topic['_id'])
-            garbage_topics.append(topic)
-    # return jsonify(delete=delete_num, total=total_num)
-    # return 'Clean finished.'
-    return render_template('admin/list_topics.html', topics=garbage_topics)
+            # 大于阈值，标记
+            # print(topic['_id'])
+            topic_collection.update({'_id': topic['_id']}, {'$set': {'garbage': True}})
 
-@admin.route('/clean/')
-def clean_topics():
-    """
-    清理主题：将所有无关图片加入黑名单内，循环搜索每个主题，
-    若该主题内黑名单图片的比例大于某阈值，则删除该主题以及主题下所有的图片。
-    """
-    threshold = 0.6
-    client = MongoClient()
+    return redirect(url_for('.show_garbage'))
+
+
+@admin.route('/garbage/')
+def show_garbage():
+    client = MongoClient(tz_aware=True)
     topic_collection = client[current_app.config['DB_NAME']][current_app.config['TOPIC_COLLECTION']]
-    image_collection = client[current_app.config['DB_NAME']][current_app.config['IMAGE_COLLECTION']]
-    garbage_image_collection = client[current_app.config['DB_NAME']][current_app.config['GARBAGE_IMAGE_COLLECTION']]
-    # 如果一个 topic 内图片个数为 0，则删除 topic
-    topic_collection.update({'images': []}, {'$set': {'deleted': True}}, multi=True)
+    garbage_topics = topic_collection.find({'garbage': True})
+    return render_template('admin/show_garbage.html', topics=list(garbage_topics))
 
-    # 如果一个 topic 内包含的 garbage_image 数大于图片个数的 1/X，删除 topic 和图片
-    topics = topic_collection.find({'deleted': {'$ne': True}}, {'images': True})
-    garbage_images = garbage_image_collection.find({})
-    garbage_images_sha1 = [garbage_image['sha1'] for garbage_image in garbage_images]
-    delete_num = 0
-    total_num = topics.count()
-    current_app.clean_progress = 0
-    for i, topic in enumerate(topics):
-        current_app.clean_progress = int(i/total_num*100)   # 当前进度
-        # print(current_app.clean_progress)
-        # print(topic['_id'])
-        images = image_collection.find({'_id': {'$in': list(topic['images'])}}, {'sha1': True})
-        if not images.count():
-            # 如果主题已没有图片，直接标记为已删除
-            topic_collection.update({'_id': topic['_id']}, {'$set': {'deleted': True}})
-            continue
-        images_sha1 = [image['sha1'] for image in images]
-        # print(set(images_sha1))
-        # print(set(discarded_images_sha1))
-        # print(set(images_sha1).intersection(set(discarded_images_sha1)))
-        # print(len(set(images_sha1).intersection(set(discarded_images_sha1))) / len(images_sha1))
-        garbage_count = 0
-        for image_sha1 in images_sha1:
-            if image_sha1 in garbage_images_sha1:
-                garbage_count += 1
-        if garbage_count / len(images_sha1) > threshold:
-            print(topic['_id'])
-            delete_num += 1
-            delete_topic_(topic['_id'])
-    current_app.clean_progress = 100
-    return jsonify(delete=delete_num, total=total_num)
-    # return 'Clean finished.'
+
+@admin.route('/garbage/clean/')
+def clean_garbage():
+    client = MongoClient(tz_aware=True)
+    topic_collection = client[current_app.config['DB_NAME']][current_app.config['TOPIC_COLLECTION']]
+    garbage_topics = topic_collection.find({'garbage': True})
+    print(garbage_topics.count())
+    # topic_collection.update({'garbage': True, 'deleted': {'$ne': True}}, {'$set': {'deleted': True}})
+    return 'Clean finished.'
 
 @admin.route('/duplicate/')
 def clear_duplicates():
@@ -267,19 +238,25 @@ def clear_duplicates():
     return render_template('admin/duplicate.html', duplicates=duplicates)
 
 
+@admin.route('/omission/check/')
+def check_omissions():
+    client = MongoClient(tz_aware=True)
+    topic_collection = client[current_app.config['DB_NAME']][current_app.config['TOPIC_COLLECTION']]
+    topics = topic_collection.find({'omitted': {'$ne': True}, 'deleted': {'$ne': True}})
+    for topic in topics:
+        if len(set(topic['images'])) != len(topic['images']):
+            topic_collection.update({'_id': topic['_id']}, {'$set': {'omitted': True}})
+
+    return redirect(url_for('.show_omissions'))
+
+
+
 @admin.route('/omission/')
 def show_omissions():
     client = MongoClient(tz_aware=True)
     topic_collection = client[current_app.config['DB_NAME']][current_app.config['TOPIC_COLLECTION']]
-    image_collection = client[current_app.config['DB_NAME']][current_app.config['IMAGE_COLLECTION']]
-    topics = topic_collection.find({})
-    problem_topics = []
-    for topic in topics:
-        if len(set(topic['images'])) != len(topic['images']):
-            # print(topic['title'])
-            problem_topics.append(topic)
-            # delete_topic_(topic['_id'], physical_removal=True, remove_images=True)
-    return render_template('admin/list_topics.html', topics=problem_topics)
+    omitted_topics = topic_collection.find({'omitted': True})
+    return render_template('admin/show_omissions.html', topics=list(omitted_topics))
 
 @admin.route('/all/')
 def show_all():

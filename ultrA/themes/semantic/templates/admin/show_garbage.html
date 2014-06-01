@@ -52,7 +52,9 @@
       <th></th>
       <th></th>
       <th></th>
-      <th></th>
+      <th colspan="1">
+        <a class="ui tiny green button" href="{{ url_for('.check_garbage') }}">刷新</a>
+      </th>
       <th colspan="2">
         <a id="delete_all" class="ui tiny red button" href="{{ url_for('.clean_garbage') }}">删除全部</a>
       </th>
@@ -67,7 +69,7 @@
 $(".rating").rating("disable");
 
 $("#delete_all").click(function(){
-  alert($("tr").attr("id"));
+  // alert($("tr").attr("id"));
 });
 </script>
 {% endblock %}
