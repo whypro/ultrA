@@ -4,12 +4,12 @@ from flask import Flask, g, flash, redirect, url_for
 from flask.ext.themes import setup_themes
 from pymongo import MongoClient
 from ultrA import views
+from ultrA.database import MongoDB
 
 
 def create_app(config=None):
     app = Flask(__name__)
     app.config.from_object(config)
-
     config_blueprints(app)
     config_error_handlers(app)
     configure_theme(app)
@@ -49,7 +49,6 @@ def config_error_handlers(app):
 def config_context_processor(app):
     @app.context_processor
     def inject_tags():
-        client = MongoClient()
-        topic_collection = client[app.config['DB_NAME']][app.config['TOPIC_COLLECTION']]
-        tags = topic_collection.distinct('tags')
+        db = MongoDB()
+        tags = db.topic_collection.distinct('tags')
         return dict(tags=tags)

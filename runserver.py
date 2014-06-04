@@ -8,7 +8,7 @@ sys.path.insert(0, deps_path)
 
 from ultrA import create_app
 
-app = create_app('ultrA.config')
+app = create_app('ultrA.config.DevelopmentConfig')
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True, threaded=True)
+    app.run(host='0.0.0.0', threaded=True)

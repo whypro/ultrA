@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function, unicode_literals, division
+from datetime import datetime
 import os
 import shutil
 import re
@@ -7,9 +8,9 @@ from StringIO import StringIO
 from bson.objectid import ObjectId
 from flask import Blueprint, send_from_directory, current_app, abort, redirect, send_file
 from flask import url_for, request, jsonify
-from pymongo import MongoClient
 from PIL import Image
 from ultrA.helpers import render_template
+from ultrA.database import MongoDB
 
 
 frontend = Blueprint('frontend', __name__)
@@ -29,16 +30,15 @@ def index():
 @frontend.route('/topic/')
 @frontend.route('/topic/tag/<tag>/')
 def show_all_topics(tag=None):
-    client = MongoClient()
-    topic_collection = client[current_app.config['DB_NAME']][current_app.config['TOPIC_COLLECTION']]
-    tags = topic_collection.distinct('tags')
+    db = MongoDB()
+    tags = db.topic_collection.distinct('tags')
     if tag and tag not in tags:
         abort(404)
 
     condition = {'deleted': {'$ne': True}}
     if tag in tags:
         condition['tags'] = tag
-    topics = topic_collection.find(
+    topics = db.topic_collection.find(
         condition,
         {'title': True, 'images': True, 'tags': True, 'rating': True}
     ).sort([
@@ -55,19 +55,18 @@ def show_all_topics(tag=None):
 def get_topics(tag=None):
     start = int(request.args.get('start', '0'))
     count = int(request.args.get('count', '20'))
-    client = MongoClient()
-    topic_collection = client[current_app.config['DB_NAME']][current_app.config['TOPIC_COLLECTION']]
+    db = MongoDB()
     condition = {'deleted': {'$ne': True}}
     if tag:
         condition['tags'] = tag
-    topics = topic_collection.find(
+    topics = db.topic_collection.find(
         condition, {'title': True, 'images': True, 'tags': True, 'rating': True}
     ).sort([
         ('rating', 1),
         ('_id', -1)
     ]).skip(start).limit(count)
     count = topics.count()
-    total = topic_collection.find(condition).count()
+    total = db.topic_collection.find(condition).count()
     # start, count, total
 
     return jsonify(
@@ -78,9 +77,8 @@ def get_topics(tag=None):
 
 @frontend.route('/topic/hot/')
 def show_hot_topics():
-    client = MongoClient()
-    topic_collection = client[current_app.config['DB_NAME']][current_app.config['TOPIC_COLLECTION']]
-    topics = topic_collection.find(
+    db = MongoDB()
+    topics = db.topic_collection.find(
         {'deleted': {'$ne': True}},
         {'title': True, 'images': True, 'tags': True, 'rating': True}
     ).sort([
@@ -111,50 +109,45 @@ def search():
     key = request.args.get('key')
     print(key)
     key_regex = re.compile(key, re.IGNORECASE)
-    client = MongoClient()
-    topic_collection = client[current_app.config['DB_NAME']][current_app.config['TOPIC_COLLECTION']]
-    topics = topic_collection.find({'deleted': {'$ne': True}, 'title': key_regex}).limit(50)
+    db = MongoDB()
+    topics = db.topic_collection.find({'deleted': {'$ne': True}, 'title': key_regex}).limit(50)
     return render_template('frontend/list_topics.html', topics=topics_filter(topics))
-
 
 
 @frontend.route('/topic/<oid>/')
 def show_topic(oid):
-    client = MongoClient()
-    topic_collection = client[current_app.config['DB_NAME']][current_app.config['TOPIC_COLLECTION']]
-    image_collection = client[current_app.config['DB_NAME']][current_app.config['IMAGE_COLLECTION']]
-    garbage_image_collection = client[current_app.config['DB_NAME']][current_app.config['GARBAGE_IMAGE_COLLECTION']]
-    topic = topic_collection.find_one({'_id': ObjectId(oid)})
+    db = MongoDB()
+    topic = db.topic_collection.find_one({'_id': ObjectId(oid)})
     if not topic:
         abort(404)
     rating = topic.get('rating')
-    images = image_collection.find({'_id': {'$in': list(topic['images'])}})
+    images = db.image_collection.find({'_id': {'$in': list(topic['images'])}})
     print(images.count())
-    topic_collection.update({'_id': ObjectId(oid)}, {'$inc': {'click_count': 1}})
+    db.topic_collection.update({'_id': ObjectId(oid)}, {'$inc': {'click_count': 1}})
     # 为游标增加字段
     images = list(images)
     for image in images:
-        if garbage_image_collection.find_one({'sha1': image['sha1']}):
+        if db.garbage_image_collection.find_one({'sha1': image['sha1']}):
             image['garbage'] = True
         else: 
             image['garbage'] = False
     print(len(images))
     return render_template('frontend/show_topic.html', topic=topic, images=images, rating=rating)
 
+
 @frontend.route('/image/<oid>/show/')
 def show_image(oid):
-    client = MongoClient()
-    image_collection = client[current_app.config['DB_NAME']][current_app.config['IMAGE_COLLECTION']]
-    image = image_collection.find_one({'_id': ObjectId(oid)})
+    db = MongoDB()
+    image = db.image_collection.find_one({'_id': ObjectId(oid)})
     return render_template('frontend/show_image.html', image=image)
+
 
 @frontend.route('/image/<size>/<oid>/')
 def send_image(size, oid):
     if size not in ('origin', 'large', 'thumb'):
         abort(404)
-    client = MongoClient()
-    image_collection = client[current_app.config['DB_NAME']][current_app.config['IMAGE_COLLECTION']]
-    image = image_collection.find_one({'_id': ObjectId(oid)})
+    db = MongoDB()
+    image = db.image_collection.find_one({'_id': ObjectId(oid)})
     if not image:
         abort(404)
     path = os.path.join(current_app.config['MEDIA_PATH'], image['path'])
@@ -194,14 +187,13 @@ def send_image(size, oid):
 
 @frontend.route('/image/<oid>/_discard/', methods=['POST'])
 def discard_image(oid):
-    client = MongoClient()
-    image_collection = client[current_app.config['DB_NAME']][current_app.config['IMAGE_COLLECTION']]
-    garbage_image_collection = client[current_app.config['DB_NAME']][current_app.config['GARBAGE_IMAGE_COLLECTION']]
-    image = image_collection.find_one({'_id': ObjectId(oid)})
+    db = MongoDB()
+    image = db.image_collection.find_one({'_id': ObjectId(oid)})
     if not image:
         return jsonify(error=404)
-    garbage_image_collection.update({'sha1': image['sha1']}, {'sha1': image['sha1']}, upsert=True)
+    db.garbage_image_collection.update({'sha1': image['sha1']}, {'sha1': image['sha1']}, upsert=True)
     return jsonify({})
+
 
 @frontend.route('/topic/<oid>/_delete/', methods=['POST'])
 def delete_topic(oid):
@@ -222,14 +214,12 @@ def delete_topic(oid):
 
 def delete_topic_(oid, physical_removal=False, remove_images=True):
     # remove_local = request.form.get('remove_local')
-    client = MongoClient()
-    topic_collection = client[current_app.config['DB_NAME']][current_app.config['TOPIC_COLLECTION']]
-    image_collection = client[current_app.config['DB_NAME']][current_app.config['IMAGE_COLLECTION']]
-    topic = topic_collection.find_one({'_id': ObjectId(oid)})
+    db = MongoDB()
+    topic = db.topic_collection.find_one({'_id': ObjectId(oid)})
     if not topic:
         return jsonify(error=404)
     if remove_images:
-        first_image = image_collection.find_one({'_id': {'$in': topic['images']}})
+        first_image = db.image_collection.find_one({'_id': {'$in': topic['images']}})
         # 删除图片目录
         if first_image:
             topic_path = os.path.dirname(os.path.join(current_app.config['MEDIA_PATH'], first_image['path']))
@@ -237,12 +227,15 @@ def delete_topic_(oid, physical_removal=False, remove_images=True):
             if os.path.exists(topic_path):
                 shutil.rmtree(topic_path)
         # 删除所有图片
-        image_collection.remove({'_id': {'$in': topic['images']}})
+        db.image_collection.remove({'_id': {'$in': topic['images']}})
     if physical_removal:
-        topic_collection.remove({'_id': ObjectId(oid)})
+        db.topic_collection.remove({'_id': ObjectId(oid)})
     else:
         # 标记主题为已删除
-        topic_collection.update({'_id': ObjectId(oid)}, {'$set': {'deleted': True}})
+        db.topic_collection.update(
+            {'_id': ObjectId(oid)},
+            {'$set': {'deleted': True, 'modify_time': datetime.utcnow()}}
+        )
 
 
 @frontend.route('/topic/<oid>/_edit/', methods=['POST'])
@@ -255,16 +248,15 @@ def edit_topic(oid):
     elif rating:
         abort(400)
 
-    client = MongoClient()
-    topic_collection = client[current_app.config['DB_NAME']][current_app.config['TOPIC_COLLECTION']]
-    set_data = {}
+    db = MongoDB()
+    set_data = {'modify_time': datetime.utcnow()}
     if title:
         set_data['title'] = title
     if rating:
         set_data['rating'] = rating
     print(set_data)
-    topic_collection.update({'_id': ObjectId(oid)}, {'$set': set_data})
-    # topic = topic_collection.find_one({'_id': ObjectId(oid)}, {'title': True, 'rating': True})
+    db.topic_collection.update({'_id': ObjectId(oid)}, {'$set': set_data})
+    # topic = db.topic_collection.find_one({'_id': ObjectId(oid)}, {'title': True, 'rating': True})
     return jsonify(set_data, success=True)
 
 
