@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function, unicode_literals, division
+from datetime import datetime
 import os
 import hashlib
 from time import clock
@@ -215,9 +216,39 @@ def show_all():
     return render_template('admin/list_topics.html', topics=list(topics))
 
 
-
 @admin.route('/duplicate/')
-def clear_duplicates():
+def show_duplicates():
+    db = MongoDB()
+    # 查询所有涉嫌重复的记录
+    topics = db.topic_collection.find({'duplicates': {'$exists': True}})
+    # print(duplicate_topics.count())
+    oids_list = []  # 不重复的重复主题集合
+    for topic in topics:
+        if topic['duplicates'] not in oids_list:
+            oids_list.append(topic['duplicates'])
+    # print(len(oids_list))
+    duplicates = []
+    for oids in oids_list:
+        # print(oids)
+        duplicate_topics = db.topic_collection.find({'_id': {'$in': oids}})
+        # print(duplicate_topics.count())
+        duplicates.append(list(duplicate_topics))
+    # return jsonify(duplicates=duplicates)
+    # duplicate_topics = db.topic_collection.find({'duplicates.1': {'$exists': True}, 'deleted': {'$ne': True}})
+    return render_template('admin/show_duplicates.html', duplicates=list(duplicates))
+
+
+@admin.route('/duplicate/clean/')
+def clean_duplicates():
+    db = MongoDB()
+    topics = db.topic_collection.find({'duplicates': {'$exists': True}})
+    for topic in topics:
+        delete_topic_(topic, physical_removal=True, remove_images=True)
+    return redirect(url_for('.show_duplicates'))
+
+
+@admin.route('/duplicate/check/')
+def check_duplicates():
     """
     清理重复主题：在数据库中搜索包含相同图片的主题，
     可分为三种情况：
@@ -233,15 +264,34 @@ def clear_duplicates():
     # 4. A 与 B 的交集图片数量大于某阈值
     """
 
-
     # 1 if 主题内 images 的 id 完全相同（爬虫时的 BUG），仅删除主题，不删除图片
-    # 2 elif 主题内 images 的 path 完全相同，删除主题和主题相关的图片
     # 3 elif 主题内 images 的 sha1 完全相同，删除主题和主题相关的图片
     db = MongoDB()
     topics = db.topic_collection.find({'deleted': {'$ne': True}}, {'images': True})
-    duplicates = []
+    # duplicates = []
     total_num = topics.count()
     begin = clock()
+
+    for i, topic in enumerate(topics):
+        # 搜索 images oid 相同的
+        duplicate_topics = db.topic_collection.find(
+            {'deleted': {'$ne': True},
+             'images': list(topic['images'])}
+        )
+
+        # 搜索 images sha1 相同的
+        images = db.image_collection.find({'_id': {'$in': topic['images']}})
+        images_sha1 = [image['sha1'] for image in images]
+
+        if duplicate_topics.count() > 1:    # 包含自己
+            print('%d/%d: %d' % (i, total_num, duplicate_topics.count()))
+            duplicate_topic_oids = [duplicate_topic['_id'] for duplicate_topic in duplicate_topics]
+            # print(duplicate_topic_oids)
+            db.topic_collection.update(
+                {'_id': topic['_id']},
+                {'$set': {'duplicates': duplicate_topic_oids, 'modify_time': datetime.utcnow()}}
+            )
+
     # topic_ids = [topic['_id'] for topic in topics]
     # for i, topic_id in enumerate(topic_ids):
     #     topic = db.topic_collection.find_one({'_id': topic_id})
@@ -256,12 +306,8 @@ def clear_duplicates():
     #     for duplicate_topic in duplicate_topics:
     #         topic_ids.remove(duplicate_topic['_id'])
 
-    for i, topic in enumerate(topics):
-        duplicate_topics = db.topic_collection.find({'deleted': {'$ne': True}, 'images': list(topic['images'])}, {'title': True, 'create_time': True})
-        if duplicate_topics.count() > 1:
-            print('%d/%d: %d' % (i, total_num, duplicate_topics.count()))
-            duplicates.append(list(duplicate_topics))
     end = clock()
     print(end-begin)
-    return render_template('admin/duplicate.html', duplicates=duplicates)
+    return 'duplicates'
+    # return render_template('admin/duplicate.html', duplicates=duplicates)
 
