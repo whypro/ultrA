@@ -38,10 +38,17 @@ def remove_all():
 
 
 def import_topics_and_images(path, topic_collection, image_collection, option=0):
-    """
-        option == 0 or others: 略过已存在记录
-        option == 1: 更新已存在记录
-        option == 2: 重建已存在记录
+    """从本地目录导入图片。
+    Args: 
+        path: 本地目录
+        topic_collection: MongoDB 数据库主题集合
+        image_collection: MongoDB 数据库图片集合
+        option: 选项
+            option == 0 or others: 略过已存在记录
+            option == 1: 更新已存在记录
+            option == 2: 重建已存在记录
+    Returns:
+        None
     """
     dirs = os.listdir(path)
     for tag in dirs:    # 遍历分类
@@ -267,30 +274,75 @@ def check_duplicates():
     # 1 if 主题内 images 的 id 完全相同（爬虫时的 BUG），仅删除主题，不删除图片
     # 3 elif 主题内 images 的 sha1 完全相同，删除主题和主题相关的图片
     db = MongoDB()
-    topics = db.topic_collection.find({'deleted': {'$ne': True}}, {'images': True})
+    topics = db.topic_collection.find({'deleted': {'$ne': True}})
     # duplicates = []
     total_num = topics.count()
     begin = clock()
 
     for i, topic in enumerate(topics):
-        # 搜索 images oid 相同的
-        duplicate_topics = db.topic_collection.find(
-            {'deleted': {'$ne': True},
-             'images': list(topic['images'])}
-        )
+        print(i)
+        image_oids = topic['images']
+        if image_oids:
+            first_image = db.image_collection.find_one({'_id': image_oids[0]})
+        else:
+            continue
+        topics_b = db.topic_collection.find({'_id': {'$ne': topic['_id']}, 'deleted': {'$ne': True}})
+        for j, topic_b in enumerate(topics_b):
+            image_oids_b = topic_b['images']
+            if image_oids_b:
+                first_image_b = db.image_collection.find_one({'_id': {'$in': topic_b['images']}})
+            else:
+                continue
+            if first_image['sha1'] == first_image_b['sha1']:
+                print(topic_b['title'])
 
-        # 搜索 images sha1 相同的
-        images = db.image_collection.find({'_id': {'$in': topic['images']}})
-        images_sha1 = [image['sha1'] for image in images]
 
-        if duplicate_topics.count() > 1:    # 包含自己
-            print('%d/%d: %d' % (i, total_num, duplicate_topics.count()))
-            duplicate_topic_oids = [duplicate_topic['_id'] for duplicate_topic in duplicate_topics]
-            # print(duplicate_topic_oids)
-            db.topic_collection.update(
-                {'_id': topic['_id']},
-                {'$set': {'duplicates': duplicate_topic_oids, 'modify_time': datetime.utcnow()}}
-            )
+        #     images_b_sha1 = set([image['sha1'] for image in images_b])
+        #     if not len(images_b_sha1.difference(images_sha1)):
+        #         # print(topic['title'], topic_b['title'])
+        #         duplicate_oids.append(topic_b['_id'])
+
+
+
+        # images = db.image_collection.find({'_id': {'$in': topic['images']}})
+        # images_sha1 = set([image['sha1'] for image in images])
+        # topics_b = db.topic_collection.find({'_id': {'$ne': topic['_id']}, 'deleted': {'$ne': True}})
+        # print(i)
+        # duplicate_oids = [topic['_id']]
+        # for j, topic_b in enumerate(topics_b):
+        #     # print(i, j)
+        #     images_b = db.image_collection.find({'_id': {'$in': topic_b['images']}})
+        #     images_b_sha1 = set([image['sha1'] for image in images_b])
+        #     if not len(images_b_sha1.difference(images_sha1)):
+        #         # print(topic['title'], topic_b['title'])
+        #         duplicate_oids.append(topic_b['_id'])
+        # if len(duplicate_oids) > 1:
+        #     print(duplicate_oids)
+
+
+
+
+
+
+
+        # # 搜索 images oid 相同的
+        # duplicate_topics = db.topic_collection.find(
+        #     {'deleted': {'$ne': True},
+        #      'images': list(topic['images'])}
+        # )
+
+        # # 搜索 images sha1 相同的
+        # images = db.image_collection.find({'_id': {'$in': topic['images']}})
+        # images_sha1 = [image['sha1'] for image in images]
+
+        # if duplicate_topics.count() > 1:    # 包含自己
+        #     print('%d/%d: %d' % (i, total_num, duplicate_topics.count()))
+        #     duplicate_topic_oids = [duplicate_topic['_id'] for duplicate_topic in duplicate_topics]
+        #     # print(duplicate_topic_oids)
+        #     db.topic_collection.update(
+        #         {'_id': topic['_id']},
+        #         {'$set': {'duplicates': duplicate_topic_oids, 'modify_time': datetime.utcnow()}}
+        #     )
 
     # topic_ids = [topic['_id'] for topic in topics]
     # for i, topic_id in enumerate(topic_ids):
@@ -311,3 +363,4 @@ def check_duplicates():
     return 'duplicates'
     # return render_template('admin/duplicate.html', duplicates=duplicates)
 
+ 

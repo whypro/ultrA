@@ -30,6 +30,17 @@ def index():
 @frontend.route('/topic/')
 @frontend.route('/topic/tag/<tag>/')
 def show_all_topics(tag=None):
+    """Topics page.
+
+    show all topics.
+
+    Args:
+        tag: filter by tag, if tag == None, then return all topics
+
+    Returns:
+        topics: a list of topics
+        tag: same to the arg tag
+    """
     db = MongoDB()
     tags = db.topic_collection.distinct('tags')
     if tag and tag not in tags:
