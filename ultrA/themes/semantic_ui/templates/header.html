@@ -1,0 +1,36 @@
+<div class="ui purple inverted menu">
+  <a class="item" href="{{ url_for('frontend.index') }}">
+    <i class="home icon"></i>主页
+  </a>
+  <div class="ui dropdown item">
+    分类<i class="dropdown icon"></i>
+    <div class="menu">
+        {% for tag in tags %}
+        <a class="item" href="{{ url_for('frontend.show_all_topics', tag=tag) }}"><i class="tag icon"></i>{{ tag }}</a>
+        {% endfor %}
+    </div>
+  </div>
+  <a class="item" href="{{ url_for('frontend.show_hot_topics') }}">
+    <i class="thumbs up icon"></i>热门
+  </a>
+  <a class="item" href="{{ url_for('admin.index') }}">
+    <i class="user icon"></i>管理
+  </a>
+  <div class="right menu">
+    <div class="item">
+      <div class="ui transparent icon input">
+        <input id="key" type="text" placeholder="请输入关键词...">
+        <i id="search" class="search link icon"></i>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+$("#search").click(function(){
+  var key = $("#key").val();
+  if (key != "") {
+    window.location.href = "{{ url_for('frontend.search') }}" + "?key=" + key;
+  }
+});
+</script>

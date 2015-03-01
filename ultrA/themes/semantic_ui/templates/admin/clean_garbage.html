@@ -1,0 +1,45 @@
+{% extends theme('admin/layout.html') %}
+{% block title %}管理{% endblock %}
+{% block admin_content %}
+<div id="result" class="ui success message" style="display: none;">
+  <p></p>
+</div>
+<div class="ui active green striped progress">
+  <div id="progress" class="bar"></div>
+</div>
+{% endblock %}
+{% block script%}
+<script>
+/* 清理主题，显示进度 */
+var timeSet;
+$("#clean").click(function(){
+  $("#progress").css("width", "0");
+  $("#progress").parent().addClass("active");
+  $.get("{{ url_for('.clean_topic') }}", {}, function(data){
+    // 
+    $("#result p").append("共清理了 "+data.delete+" 个主题！");
+    $('#result').show().transition('tada');
+    // alert("共清理了"+data.delete+"个主题。");
+  });
+  timeSet = setInterval(get_progress, 300);
+
+});
+
+get_progress = function() {
+  $.get("{{ url_for('.get_clean_progress') }}", {"_": Math.random()}, function(data){
+    $("#progress").css("width", data.progress+"%");
+    if (data.progress == "100") {
+      clearInterval(timeSet);
+      $("#progress").parent().removeClass("active");
+    }
+  });
+}
+
+</script>
+{% endblock %}
+
+
+
+
+
+

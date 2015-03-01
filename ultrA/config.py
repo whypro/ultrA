@@ -8,7 +8,7 @@ class Config(object):
     # FLASK
 
     # FLASK-THEMES
-    DEFAULT_THEME = 'semantic'
+    DEFAULT_THEME = 'semantic_ui'
 
     # MONGODB
     DB_HOST = 'localhost'
@@ -33,7 +33,7 @@ class NormalConfig(DevelopmentConfig):
     GARBAGE_IMAGE_COLLECTION = 'test_garbage_image'
     
     if 'Windows' in platform.system():
-        MEDIA_PATH = 'E:\\test\\'
+        MEDIA_PATH = 'E:\\照片'
     else:
         MEDIA_PATH = '/var/run/media/whypro/4. Backups/apple/autoed/'
 
@@ -43,7 +43,7 @@ class UltrAConfig(DevelopmentConfig):
     IMAGE_COLLECTION = 'raw_image'
     GARBAGE_IMAGE_COLLECTION = 'raw_garbage_image'
     if 'Windows' in platform.system():
-        MEDIA_PATH = 'F:\\apple\\results\\'
+        MEDIA_PATH = 'J:\\一些资料\\apple\\results'
     else:
         MEDIA_PATH = '/var/run/media/whypro/4. Backups/apple/results/'
 

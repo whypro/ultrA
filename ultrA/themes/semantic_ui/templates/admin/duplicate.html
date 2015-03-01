@@ -1,0 +1,7 @@
+{% for duplicate_topics in duplicates %}
+<ul>
+{% for topic in duplicate_topics %}
+<li>{{ topic.title }} | {{ topic.create_time }}</li>
+{% endfor %}
+</ul>
+{% endfor %}
