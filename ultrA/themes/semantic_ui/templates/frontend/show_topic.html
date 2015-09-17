@@ -101,6 +101,7 @@ $('.ui.checkbox').checkbox();
 $("#rating_top").rating("disable");
 
 $("#rating_bottom").rating({
+  clearable: true,
   onRate: function(value){
     if (value != "{{ topic.rating }}") {
       // alert(value);

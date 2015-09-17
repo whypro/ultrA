@@ -21,6 +21,8 @@ class Config(object):
     IMAGE_THUMB = 320
     IMAGE_LARGE = 1024
 
+    TOPICS_PER_PAGE = 24
+
 
 class DevelopmentConfig(Config):
     DEBUG = True
@@ -31,7 +33,7 @@ class NormalConfig(DevelopmentConfig):
     TOPIC_COLLECTION = 'test_topic'
     IMAGE_COLLECTION = 'test_image'
     GARBAGE_IMAGE_COLLECTION = 'test_garbage_image'
-    
+
     if 'Windows' in platform.system():
         MEDIA_PATH = 'E:\\照片'
     else:
@@ -43,7 +45,7 @@ class UltrAConfig(DevelopmentConfig):
     IMAGE_COLLECTION = 'raw_image'
     GARBAGE_IMAGE_COLLECTION = 'raw_garbage_image'
     if 'Windows' in platform.system():
-        MEDIA_PATH = 'J:\\一些资料\\apple\\results'
+        MEDIA_PATH = 'I:\\一些资料\\apple\\results'
     else:
         MEDIA_PATH = '/var/run/media/whypro/4. Backups/apple/results/'
 
@@ -51,4 +53,3 @@ class UltrAConfig(DevelopmentConfig):
 class TestingConfig(UltrAConfig):
     TESTING = True
     CSRF_ENABLED = False
-

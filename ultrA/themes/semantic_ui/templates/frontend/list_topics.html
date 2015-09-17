@@ -1,9 +1,4 @@
-{% extends theme('layout.html') %}
-{% set active_page = 'index' %}
-{% block title %}首页{% endblock %}
-{% block content %}
-<div class="ui stackable page grid">
-  {% for topic in topics %}
+{% macro topic_card(topic) -%}
   <div class="four wide column">
     <div class="ui card">
       <a class="image" href="{{ url_for('frontend.show_topic', oid=topic._id) }}">
@@ -17,15 +12,38 @@
       </div>
       <div class="extra content">
         <a href="{{ url_for('.show_all_topics', tag=topic.tag) }}" class="ui purple ribbon label">{{ topic.tag }}</a>
-        <div class="ui huge heart rating" data-rating="{{ topic.rating }}" data-max-rating="5">
-
-        </div>
-
+        <div class="ui huge heart rating" data-rating="{{ topic.rating }}" data-max-rating="5"></div>
       </div>
     </div>
-    
   </div>
+{%- endmacro %}
+
+
+{% macro render_pagination(pagination, endpoint) %}
+  <div class="two column right aligned row">
+    <div class="ui borderless pagination menu">
+      {% if pagination.page > 1 -%}
+      <a class="item" href="{{ url_for(endpoint, page=pagination.page-1, tag=tag) }}"><i class="left arrow icon"></i></a>
+      {%- endif %}
+      {% if pagination.page < pagination.pages -%}
+      <a class="item" href="{{ url_for(endpoint, page=pagination.page+1, tag=tag) }}"><i class="icon right arrow"></i></a>
+      {%- endif %}
+    </div>
+  </div>
+{% endmacro %}
+
+
+
+{% extends theme('layout.html') %}
+{% set active_page = 'index' %}
+{% block title %}首页{% endblock %}
+{% block content %}
+<div class="ui stackable page grid">
+  {% for topic in topics %}
+  {{ topic_card(topic) }}
   {% endfor %}
+
+  {{ render_pagination(pagination, 'frontend.show_all_topics') }}
 
   <div class="two column centered row">
     <div class="column">
@@ -36,6 +54,7 @@
 {% endblock %}
 {% block script %}
 <script>
+
 $("#more").click(function(){
   // 动态刷新
   
@@ -49,7 +68,7 @@ $("#more").click(function(){
           // alert(data.topics[index].title);
           topics += data.topics[index].title;
         }
-        $("#more").before(topics);
+        $("#more").before();
     });
   
 });

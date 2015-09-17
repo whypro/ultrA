@@ -172,7 +172,7 @@ def check_garbage():
 @admin.route('/garbage/')
 def show_garbage():
     db = MongoDB()
-    garbage_topics = db.topic_collection.find({'garbage': True})
+    garbage_topics = db.topic_collection.find({'garbage': True, 'deleted': {'$ne': True}}).sort([('create_time', -1)])
     return render_template('admin/show_garbage.html', topics=list(garbage_topics))
 
 

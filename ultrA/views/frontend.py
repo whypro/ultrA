@@ -27,9 +27,11 @@ def index():
     return redirect(url_for('.show_all_topics'))
 
 
-@frontend.route('/topic/')
-@frontend.route('/topic/tag/<tag>/')
-def show_all_topics(tag=None):
+@frontend.route('/topic/', defaults={'page': 1})
+@frontend.route('/topic/<int:page>/')
+@frontend.route('/topic/tag/<tag>/', defaults={'page': 1})
+@frontend.route('/topic/tag/<tag>/<int:page>/')
+def show_all_topics(page, tag=None):
     """Topics page.
 
     show all topics.
@@ -56,9 +58,17 @@ def show_all_topics(tag=None):
         #('click_count', 1),
         ('rating', 1),
         ('_id', -1)
-    ]).limit(50)
+    ]).skip((page-1)*current_app.config['TOPICS_PER_PAGE']).limit(current_app.config['TOPICS_PER_PAGE'])
 
-    return render_template('frontend/list_topics.html', topics=topics_filter(topics), tag=tag)
+    count = topics.count(with_limit_and_skip=True)
+    total = topics.count()
+
+    if not count:
+        abort(404)
+
+    pagination = dict(page=page, pages=total//current_app.config['TOPICS_PER_PAGE']+1)
+
+    return render_template('frontend/list_topics.html', topics=topics_filter(topics), tag=tag, pagination=pagination)
 
 
 @frontend.route('/_topic/')
@@ -76,8 +86,9 @@ def get_topics(tag=None):
         ('rating', 1),
         ('_id', -1)
     ]).skip(start).limit(count)
-    count = topics.count()
-    total = db.topic_collection.find(condition).count()
+    count = topics.count(with_limit_and_skip=True)
+    total = topics.count()
+    # total = db.topic_collection.find(condition).count()
     # start, count, total
 
     return jsonify(
@@ -86,18 +97,27 @@ def get_topics(tag=None):
     )
 
 
-@frontend.route('/topic/hot/')
-def show_hot_topics():
+@frontend.route('/topic/hot/', defaults={'page': 1})
+@frontend.route('/topic/hot/<int:page>/')
+def show_hot_topics(page):
     db = MongoDB()
     topics = db.topic_collection.find(
-        {'deleted': {'$ne': True}},
+        {'deleted': {'$ne': True}, 'rating': {'$gt': 0}},
         {'title': True, 'images': True, 'tags': True, 'rating': True}
     ).sort([
         ('rating', -1),
         ('click_count', -1)
-    ]).limit(50)
+    ]).skip((page-1)*current_app.config['TOPICS_PER_PAGE']).limit(current_app.config['TOPICS_PER_PAGE'])
 
-    return render_template('frontend/list_topics.html', topics=topics_filter(topics))
+    count = topics.count(with_limit_and_skip=True)
+    total = topics.count()
+
+    if not count:
+        abort(404)
+
+    pagination = dict(page=page, pages=total//current_app.config['TOPICS_PER_PAGE']+1)
+
+    return render_template('frontend/list_topics.html', topics=topics_filter(topics), pagination=pagination)
 
 
 def topics_filter(origin_topics):
