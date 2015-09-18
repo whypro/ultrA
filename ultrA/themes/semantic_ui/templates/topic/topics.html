@@ -20,10 +20,10 @@
 {% endblock %}
 {% block script %}
 <script>
-
+    {#
 $("#more").click(function(){
   // 动态刷新
-  
+
   $.get("{{ url_for('home.get_topics', category=category) }}", {
       start: 0,
       count: 20
@@ -38,6 +38,7 @@ $("#more").click(function(){
     });
   
 });
+        #}
 
 /* 评分模块*/
 $(".rating").rating("disable");

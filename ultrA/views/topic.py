@@ -10,7 +10,7 @@ from ..helpers import render_template
 from ..database import MongoDB
 
 
-topic = Blueprint('topic', __name__, url_prefix='/topic_test')
+topic = Blueprint('topic', __name__, url_prefix='/topic')
 
 
 @topic.route('/', defaults={'page': 1})
@@ -120,22 +120,31 @@ def show_topic_detail(oid):
     return render_template('topic/topic_detail.html', topic=topic_, photos=photos)
 
 
-@topic.route('/<oid>/_edit/', methods=['POST'])
-def ajax_edit_topic(oid):
+@topic.route('/<oid>/_title/', methods=['POST'])
+def ajax_edit_title(oid):
     title = request.form.get('title')
-    rating = request.form.get('rating')
 
-    if rating not in (None, '1', '2', '3', '4', '5'):
+    if not title:
         abort(400)
 
     db = MongoDB()
+    db.topic_collection.update({'_id': ObjectId(oid)}, {'$set': {'title': title}})
 
-    set_data = {'modify_time': datetime.utcnow()}
-    if title:
-        set_data['title'] = title
+    return jsonify(success=True)
+
+
+@topic.route('/<oid>/_rating/', methods=['POST'])
+def ajax_edit_rating(oid):
+    rating = request.form.get('rating')
+    if rating not in ('0', '1', '2', '3', '4', '5'):
+        abort(400)
+
+    rating = int(rating)
+    db = MongoDB()
+
     if rating:
-        set_data['rating'] = int(rating)
+        db.topic_collection.update({'_id': ObjectId(oid)}, {'$set': {'modify_time': datetime.utcnow(), 'rating': rating}})
+    else:
+        db.topic_collection.update({'_id': ObjectId(oid)}, {'$unset': {'modify_time': datetime.utcnow(), 'rating': ''}})
 
-    db.topic_collection.update({'_id': ObjectId(oid)}, {'$set': set_data})
-    # topic = db.topic_collection.find_one({'_id': ObjectId(oid)}, {'title': True, 'rating': True})
-    return jsonify(set_data, success=True)
+    return jsonify(success=True)

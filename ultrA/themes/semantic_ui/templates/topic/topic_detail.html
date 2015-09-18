@@ -30,7 +30,7 @@
       {% if photos|length %}
       <div class="ui images">
         {% for photo in photos %}
-        <a class="ui image" href="{{ url_for('home.show_image', oid=photo._id) }}">
+        <a class="ui image" href="">
             <img src="{{ url_for('photo.send_image', size='large', oid=photo._id) }}" />
         </a>
         {% if not loop.last %}<div class="ui divider"></div>{% endif %}
@@ -107,7 +107,7 @@ $("#rating_bottom").rating({
     if (value != "{{ topic.rating }}") {
       // alert(value);
       $("#rating_top").rating("set rating", value);
-      $.post("{{ url_for('topic.ajax_edit_topic', oid=topic._id) }}", {
+      $.post("{{ url_for('topic.ajax_edit_rating', oid=topic._id) }}", {
         rating: value
       });
     }
@@ -125,7 +125,7 @@ $("#title").dblclick(function(){
 });
 
 $("#save").click(function(){
-    $.post("{{ url_for('topic.ajax_edit_topic', oid=topic._id) }}", {
+    $.post("{{ url_for('topic.ajax_edit_title', oid=topic._id) }}", {
       title: $('#title_input').val()
     }, function(data) {
         if (data.success == true) {
