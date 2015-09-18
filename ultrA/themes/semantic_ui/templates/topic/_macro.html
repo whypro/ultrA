@@ -1,0 +1,33 @@
+{% macro topic_card(topic) -%}
+  <div class="four wide column">
+    <div class="ui card">
+      <a class="image" href="{{ url_for('topic.show_topic_detail', oid=topic._id) }}">
+        <img src="{% if topic.cover_oid %}{{ url_for('photo.send_image', size='thumb', oid=topic.cover_oid) }}{% else %}{{ url_for('static', filename='images/cover-default.jpg') }}{% endif %}" alt="{{ topic.title }}" />
+      </a>
+      <div class="ui left green corner label">
+        {{ topic.size }}
+      </div>
+      <div class="content">
+        <a class="header" href="{{ url_for('topic.show_topic_detail', oid=topic._id) }}">{{ topic.title }}</a>
+      </div>
+      <div class="extra content">
+        <a href="{{ url_for('topic.show_topics', category=topic.category) }}" class="ui purple ribbon label">{{ topic.category }}</a>
+        <div class="ui huge heart rating" data-rating="{{ topic.rating }}" data-max-rating="5"></div>
+      </div>
+    </div>
+  </div>
+{%- endmacro %}
+
+
+{% macro render_pagination(pagination, endpoint, category) %}
+  <div class="two column right aligned row">
+    <div class="ui borderless pagination menu">
+      {% if pagination.page > 1 -%}
+      <a class="item" href="{{ url_for(endpoint, page=pagination.page-1, category=category) }}"><i class="left arrow icon"></i></a>
+      {%- endif %}
+      {% if pagination.page < pagination.pages -%}
+      <a class="item" href="{{ url_for(endpoint, page=pagination.page+1, category=category) }}"><i class="icon right arrow"></i></a>
+      {%- endif %}
+    </div>
+  </div>
+{% endmacro %}

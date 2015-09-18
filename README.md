@@ -8,19 +8,19 @@
 
 	可修改（与 path 同步）
 
-* tags: 标签
+* category: 类别
 
 * uri: 相对网络资源路径
 
 * path: 本地资源路径
 
-	可修改（与 title 同步）
+	与 category 和 title 同步
 
 * create_time: 创建时间
 
 * update_time: 修改时间
 
-* images: 图片数组
+* photos: 图片数组
 
 	* url: 绝对网络资源路径
 	

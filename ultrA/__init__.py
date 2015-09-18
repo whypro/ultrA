@@ -20,6 +20,8 @@ def create_app(config=None):
 
 def config_blueprints(app):
     app.register_blueprint(views.home)
+    app.register_blueprint(views.topic)
+    app.register_blueprint(views.photo)
     app.register_blueprint(views.admin)
 
 
@@ -48,7 +50,7 @@ def config_error_handlers(app):
 
 def config_context_processor(app):
     @app.context_processor
-    def inject_tags():
+    def inject_categories():
         db = MongoDB()
-        tags = db.topic_collection.distinct('tags')
-        return dict(tags=tags)
+        categories = db.topic_collection.distinct('category')
+        return dict(categories=categories)

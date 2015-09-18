@@ -1,0 +1,46 @@
+{% extends theme('_base.html') %}
+{% set active_page = 'index' %}
+{% block title %}首页{% endblock %}
+{% from theme('topic/_macro.html') import topic_card, render_pagination %}
+{% block content %}
+<div class="ui stackable page grid">
+  
+  {% for topic in topics %}
+  {{ topic_card(topic) }}
+  {% endfor %}
+
+  {{ render_pagination(pagination, endpoint, category) }}
+
+  <div class="two column centered row">
+    <div class="column">
+      <div id="more" class="fluid circular ui green button">加载更多</div>
+    </div>
+  </div>
+
+{% endblock %}
+{% block script %}
+<script>
+
+$("#more").click(function(){
+  // 动态刷新
+  
+  $.get("{{ url_for('home.get_topics', category=category) }}", {
+      start: 0,
+      count: 20
+    }, function(data) {
+        var topics = "";
+        /* 循环处理 data */
+        for (var index in data.topics) {
+          // alert(data.topics[index].title);
+          topics += data.topics[index].title;
+        }
+        $("#more").before();
+    });
+  
+});
+
+/* 评分模块*/
+$(".rating").rating("disable");
+
+</script>
+{% endblock %}

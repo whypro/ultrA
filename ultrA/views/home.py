@@ -68,6 +68,7 @@ def show_all_topics(page, tag=None):
 
     pagination = dict(page=page, pages=total//current_app.config['TOPICS_PER_PAGE']+1)
 
+    print(tag)
     return render_template('home/topics.html', topics=topics_filter(topics), tag=tag, pagination=pagination)
 
 
@@ -176,7 +177,7 @@ def show_image(oid):
 @home.route('/image/<size>/<oid>/')
 def send_image(size, oid):
     if size not in ('origin', 'large', 'thumb'):
-        abort(404)
+        abort(400)
     db = MongoDB()
     image = db.image_collection.find_one({'_id': ObjectId(oid)})
     if not image:

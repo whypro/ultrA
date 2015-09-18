@@ -1,0 +1,163 @@
+{% extends theme('_base.html') %}
+{% set active_page = 'topic' %}
+{% block title %}{{ topic.title }}{% endblock %}
+{% block content %}
+<div class="ui stackable page grid">
+  <div class="center aligned row">
+    <div class="column">
+      <h1 id="title" class="ui header">{{ topic.title }}</h1>
+
+      <div id="title_edit" class="ui form" style="display: none;">
+        <div class="ui two fields">
+          <div class="twelve wide field">
+            <input id="title_input" type="text" value="{{ topic.title }}">
+          </div>
+          <div class="four wide field">
+            <div class="ui buttons">
+              <div id="save" class="ui positive button">保存</div>
+              <div class="or"></div>
+              <div id="cancel" class="ui button">取消</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div id="rating_top" class="ui huge heart rating active" data-rating="{{ topic.rating }} " data-max-rating="5">
+      </div>
+
+      <div class="ui horizontal divider"><i class="camera icon"></i></div>
+      {% if photos|length %}
+      <div class="ui images">
+        {% for photo in photos %}
+        <a class="ui image" href="{{ url_for('home.show_image', oid=photo._id) }}">
+            <img src="{{ url_for('photo.send_image', size='large', oid=photo._id) }}" />
+        </a>
+        {% if not loop.last %}<div class="ui divider"></div>{% endif %}
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="ui segments">
+        <p>找不到图片哦</p>
+      </div>
+      {% endif %}
+
+      <div class="ui horizontal icon divider">
+        <i class="circular heart icon"></i>
+      </div>
+    </div>
+  </div>
+  <div class="middle aligned row">
+    <div class="two wide left aligned column">
+      <div id="delete" class="ui circular tiny red button">删除</div>
+    </div>
+    <div class="two wide left aligned column">
+      <a class="ui circular tiny blue button" href="{{ topic.url }}">原帖</a>
+    </div>
+
+
+    <div class="twelve wide right aligned column">
+      <div id="rating_bottom" class="ui huge heart rating active" data-rating="{{ topic.rating }}" data-max-rating="5">
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="ui small modal">
+  <div class="header">真的要删除吗？</div>
+  <div class="content">
+    <p>删除后将不可恢复。</p>
+  </div>
+  <div class="actions">
+    <div class="ui checkbox">
+      <input type="checkbox" id="physical_removal" />
+      <label>删除数据库中的记录</label>
+    </div>
+    <div class="ui checkbox">
+      <input type="checkbox" id="remove_images" checked />
+      <label>删除主题下的图片</label>
+    </div>
+
+    <div class="ui circular tiny negative icon button">
+      <i class="remove icon"></i>
+    </div>
+
+    <div class="ui circular tiny positive icon button">
+      <i class="checkmark icon"></i>
+    </div>
+    
+
+  </div>
+</div>
+
+{% endblock %}
+{% block script%}
+
+<script>
+/* 复选框初始化 */
+$('.ui.checkbox').checkbox();
+
+/* 评分模块*/
+$("#rating_top").rating("disable");
+
+$("#rating_bottom").rating({
+  clearable: true,
+  onRate: function(value){
+    if (value != "{{ topic.rating }}") {
+      // alert(value);
+      $("#rating_top").rating("set rating", value);
+      $.post("{{ url_for('topic.ajax_edit_topic', oid=topic._id) }}", {
+        rating: value
+      });
+    }
+  }
+});
+
+/* 修改标题模块 */
+$("#title").dblclick(function(){
+  if ($("#title_edit").css("display") == "none") {
+      $("#title_edit").slideDown();
+  }
+  else {
+      $("#title_edit").slideUp();
+  }
+});
+
+$("#save").click(function(){
+    $.post("{{ url_for('topic.ajax_edit_topic', oid=topic._id) }}", {
+      title: $('#title_input').val()
+    }, function(data) {
+        if (data.success == true) {
+            $("#title").text(data.title);
+            $("#title_edit").slideUp();
+        }
+    });
+});
+
+$("#cancel").click(function(){
+    $("#title_edit").slideUp();
+});
+
+
+{#
+/* 删除主题 */
+$("#delete").click(function(){
+
+  $('.modal').modal('setting', {
+    closable  : false,
+    onApprove : function() {
+      post_data = {
+        'physical_removal': $("#physical_removal").prop('checked'),
+        'remove_images': $("#remove_images").prop('checked')
+      }
+      $.post("{{ url_for('.delete_topic', oid=topic._id) }}", post_data, function(data) {
+             history.go(-1);
+      });
+    }
+  }).modal('show');
+});
+#}
+</script>
+
+{% endblock %}
