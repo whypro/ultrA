@@ -1,4 +1,4 @@
-{% extends theme('layout.html') %}
+{% extends theme('_base.html') %}
 {% set active_page = 'image' %}
 {% block title %}{% endblock %}
 {% block content %}
@@ -6,7 +6,7 @@
   <div id="discard" class="ui circular small red button">丢弃</div>
   <div class="center aligned row">
     <div class="column">
-      <div class="ui image"><img src="{{ url_for('frontend.send_image', size='origin', oid=image._id) }}" /></div>
+      <div class="ui image"><img src="{{ url_for('home.send_image', size='origin', oid=image._id) }}" /></div>
     </div>
   </div>
 	

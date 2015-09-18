@@ -19,7 +19,7 @@ def create_app(config=None):
 
 
 def config_blueprints(app):
-    app.register_blueprint(views.frontend)
+    app.register_blueprint(views.home)
     app.register_blueprint(views.admin)
 
 

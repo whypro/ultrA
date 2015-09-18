@@ -13,24 +13,24 @@ from ultrA.helpers import render_template
 from ultrA.database import MongoDB
 
 
-frontend = Blueprint('frontend', __name__)
+home = Blueprint('home', __name__)
 
 
-@frontend.route('/favicon.ico')
+@home.route('/favicon.ico')
 def favicon():
     # return send_from_directory('static', 'favicon.ico')
     return send_file('static/favicon.ico')
 
 
-@frontend.route('/')
+@home.route('/')
 def index():
     return redirect(url_for('.show_all_topics'))
 
 
-@frontend.route('/topic/', defaults={'page': 1})
-@frontend.route('/topic/<int:page>/')
-@frontend.route('/topic/tag/<tag>/', defaults={'page': 1})
-@frontend.route('/topic/tag/<tag>/<int:page>/')
+@home.route('/topic/', defaults={'page': 1})
+@home.route('/topic/<int:page>/')
+@home.route('/topic/tag/<tag>/', defaults={'page': 1})
+@home.route('/topic/tag/<tag>/<int:page>/')
 def show_all_topics(page, tag=None):
     """Topics page.
 
@@ -68,11 +68,11 @@ def show_all_topics(page, tag=None):
 
     pagination = dict(page=page, pages=total//current_app.config['TOPICS_PER_PAGE']+1)
 
-    return render_template('frontend/list_topics.html', topics=topics_filter(topics), tag=tag, pagination=pagination)
+    return render_template('home/topics.html', topics=topics_filter(topics), tag=tag, pagination=pagination)
 
 
-@frontend.route('/_topic/')
-@frontend.route('/_topic/tag/<tag>/')
+@home.route('/_topic/')
+@home.route('/_topic/tag/<tag>/')
 def get_topics(tag=None):
     start = int(request.args.get('start', '0'))
     count = int(request.args.get('count', '20'))
@@ -97,8 +97,8 @@ def get_topics(tag=None):
     )
 
 
-@frontend.route('/topic/hot/', defaults={'page': 1})
-@frontend.route('/topic/hot/<int:page>/')
+@home.route('/topic/hot/', defaults={'page': 1})
+@home.route('/topic/hot/<int:page>/')
 def show_hot_topics(page):
     db = MongoDB()
     topics = db.topic_collection.find(
@@ -117,7 +117,7 @@ def show_hot_topics(page):
 
     pagination = dict(page=page, pages=total//current_app.config['TOPICS_PER_PAGE']+1)
 
-    return render_template('frontend/list_topics.html', topics=topics_filter(topics), pagination=pagination)
+    return render_template('home/topics.html', topics=topics_filter(topics), pagination=pagination)
 
 
 def topics_filter(origin_topics):
@@ -135,17 +135,17 @@ def topics_filter(origin_topics):
     return topics
 
 
-@frontend.route('/topic/search/')
+@home.route('/topic/search/')
 def search():
     key = request.args.get('key')
     print(key)
     key_regex = re.compile(key, re.IGNORECASE)
     db = MongoDB()
     topics = db.topic_collection.find({'deleted': {'$ne': True}, 'title': key_regex}).limit(50)
-    return render_template('frontend/list_topics.html', topics=topics_filter(topics))
+    return render_template('home/topics.html', topics=topics_filter(topics))
 
 
-@frontend.route('/topic/<oid>/')
+@home.route('/topic/<oid>/')
 def show_topic(oid):
     db = MongoDB()
     topic = db.topic_collection.find_one({'_id': ObjectId(oid)})
@@ -163,17 +163,17 @@ def show_topic(oid):
         else: 
             image['garbage'] = False
     print(len(images))
-    return render_template('frontend/show_topic.html', topic=topic, images=images, rating=rating)
+    return render_template('home/topic_detail.html', topic=topic, images=images, rating=rating)
 
 
-@frontend.route('/image/<oid>/show/')
+@home.route('/image/<oid>/show/')
 def show_image(oid):
     db = MongoDB()
     image = db.image_collection.find_one({'_id': ObjectId(oid)})
-    return render_template('frontend/show_image.html', image=image)
+    return render_template('home/image_detail.html', image=image)
 
 
-@frontend.route('/image/<size>/<oid>/')
+@home.route('/image/<size>/<oid>/')
 def send_image(size, oid):
     if size not in ('origin', 'large', 'thumb'):
         abort(404)
@@ -216,7 +216,7 @@ def send_image(size, oid):
         return send_file(img_io, mimetype='image/'+img.format.lower())
 
 
-@frontend.route('/image/<oid>/_discard/', methods=['POST'])
+@home.route('/image/<oid>/_discard/', methods=['POST'])
 def discard_image(oid):
     db = MongoDB()
     image = db.image_collection.find_one({'_id': ObjectId(oid)})
@@ -226,7 +226,7 @@ def discard_image(oid):
     return jsonify({})
 
 
-@frontend.route('/topic/<oid>/_delete/', methods=['POST'])
+@home.route('/topic/<oid>/_delete/', methods=['POST'])
 def delete_topic(oid):
     # 获取删除参数
     if request.form.get('physical_removal') == 'true':
@@ -269,7 +269,7 @@ def delete_topic_(oid, physical_removal=False, remove_images=True):
         )
 
 
-@frontend.route('/topic/<oid>/_edit/', methods=['POST'])
+@home.route('/topic/<oid>/_edit/', methods=['POST'])
 def edit_topic(oid):
     title = request.form.get('title')
     rating = request.form.get('rating')

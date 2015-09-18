@@ -1,4 +1,4 @@
-{% extends theme('layout.html') %}
+{% extends theme('_base.html') %}
 {% set active_page = 'topic' %}
 {% block title %}{{ topic.title }}{% endblock %}
 {% block content %}
@@ -30,8 +30,8 @@
       {% if images|length %}
       <div class="ui images">
         {% for image in images %}
-        <a class="ui image {{ 'disabled' if image.garbage }}" href="{{ url_for('frontend.show_image', oid=image._id) }}">
-            <img src="{{ url_for('frontend.send_image', size='large', oid=image._id) }}" />
+        <a class="ui image {{ 'disabled' if image.garbage }}" href="{{ url_for('home.show_image', oid=image._id) }}">
+            <img src="{{ url_for('home.send_image', size='large', oid=image._id) }}" />
         </a>
         {% if not loop.last %}<div class="ui divider"></div>{% endif %}
         {% endfor %}

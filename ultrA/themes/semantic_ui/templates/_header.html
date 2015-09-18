@@ -1,16 +1,16 @@
 <div class="ui purple inverted menu">
-  <a class="item" href="{{ url_for('frontend.index') }}">
+  <a class="item" href="{{ url_for('home.index') }}">
     <i class="home icon"></i>主页
   </a>
   <div class="ui dropdown item">
     分类<i class="dropdown icon"></i>
     <div class="menu">
         {% for tag in tags %}
-        <a class="item" href="{{ url_for('frontend.show_all_topics', tag=tag) }}"><i class="tag icon"></i>{{ tag }}</a>
+        <a class="item" href="{{ url_for('home.show_all_topics', tag=tag) }}"><i class="tag icon"></i>{{ tag }}</a>
         {% endfor %}
     </div>
   </div>
-  <a class="item" href="{{ url_for('frontend.show_hot_topics') }}">
+  <a class="item" href="{{ url_for('home.show_hot_topics') }}">
     <i class="thumbs up icon"></i>热门
   </a>
   <a class="item" href="{{ url_for('admin.index') }}">
@@ -30,7 +30,7 @@
 $("#search").click(function(){
   var key = $("#key").val();
   if (key != "") {
-    window.location.href = "{{ url_for('frontend.search') }}" + "?key=" + key;
+    window.location.href = "{{ url_for('home.search') }}" + "?key=" + key;
   }
 });
 </script>

@@ -7,7 +7,7 @@ from time import clock
 from flask import Blueprint, abort, current_app, jsonify, redirect, url_for
 from ultrA.helpers import render_template
 from ultrA.database import MongoDB
-from ultrA.views.frontend import delete_topic_
+from ultrA.views.home import delete_topic_
 
 admin = Blueprint('admin', __name__, url_prefix='/admin')
 

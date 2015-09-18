@@ -14,11 +14,11 @@
 
     <script src="{{ theme_static('common/js/jquery-2.1.1.js') }}"></script>
     <script src="{{ theme_static('semantic-ui/semantic.min.js') }}"></script>
-    <link rel="shortcut icon" href="{{ url_for('frontend.favicon') }}" type="image/x-icon">
+    <link rel="shortcut icon" href="{{ url_for('home.favicon') }}" type="image/x-icon">
   </head>
 
   <body>
-    {% include theme('header.html') %}
+    {% include theme('_header.html') %}
 
     {% block content %}{% endblock %}
 

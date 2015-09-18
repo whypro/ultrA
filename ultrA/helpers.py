@@ -27,7 +27,7 @@ def render_uri(uri):
     #if uri.startswith('http'):
     #    return url_for('frontend.remote_photo') + '?uri=' + uri
     #else:
-    return url_for('frontend.uploads', filename=uri)
+    return url_for('home.uploads', filename=uri)
 
 
 # redirect back

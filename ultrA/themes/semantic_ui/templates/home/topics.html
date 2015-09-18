@@ -1,14 +1,14 @@
 {% macro topic_card(topic) -%}
   <div class="four wide column">
     <div class="ui card">
-      <a class="image" href="{{ url_for('frontend.show_topic', oid=topic._id) }}">
-        <img src="{{ url_for('frontend.send_image', size='thumb', oid=topic.cover) }}" alt="{{ topic.title }}" />
+      <a class="image" href="{{ url_for('home.show_topic', oid=topic._id) }}">
+        <img src="{{ url_for('home.send_image', size='thumb', oid=topic.cover) }}" alt="{{ topic.title }}" />
       </a>
       <div class="ui left green corner label">
         {{ topic.size }}
       </div>
       <div class="content">
-        <a class="header" href="{{ url_for('frontend.show_topic', oid=topic._id) }}">{{ topic.title }}</a>
+        <a class="header" href="{{ url_for('home.show_topic', oid=topic._id) }}">{{ topic.title }}</a>
       </div>
       <div class="extra content">
         <a href="{{ url_for('.show_all_topics', tag=topic.tag) }}" class="ui purple ribbon label">{{ topic.tag }}</a>
@@ -34,7 +34,7 @@
 
 
 
-{% extends theme('layout.html') %}
+{% extends theme('_base.html') %}
 {% set active_page = 'index' %}
 {% block title %}首页{% endblock %}
 {% block content %}
@@ -43,7 +43,7 @@
   {{ topic_card(topic) }}
   {% endfor %}
 
-  {{ render_pagination(pagination, 'frontend.show_all_topics') }}
+  {{ render_pagination(pagination, 'home.show_all_topics') }}
 
   <div class="two column centered row">
     <div class="column">
