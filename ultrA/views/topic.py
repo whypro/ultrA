@@ -34,19 +34,25 @@ def show_topics(page, category=None):
     if category and category not in categories:
         abort(404)
 
-    condition = {'status': 'normal'}
+    query = dict()
+    query['status'] = 'normal'
 
     if category:
-        condition['category'] = category
+        query['category'] = category
 
+    sort = [('rating', 1), ('_id', -1)]
+
+    topics, pagination = load_topics(query=query, sort=sort, page=page)
+
+    return render_template('topic/topics.html', endpoint='topic.show_topics', args={'category': category}, topics=topics, pagination=pagination)
+
+
+def load_topics(query, sort, page):
+    db = MongoDB()
     topics = db.topic_collection.find(
-        condition,
+        query,
         {'title': True, 'photos': True, 'category': True, 'rating': True}
-    ).sort([
-        #('click_count', 1),
-        ('rating', 1),
-        ('_id', -1)
-    ]).skip((page-1)*current_app.config['TOPICS_PER_PAGE']).limit(current_app.config['TOPICS_PER_PAGE'])
+    ).sort(sort).skip((page-1)*current_app.config['TOPICS_PER_PAGE']).limit(current_app.config['TOPICS_PER_PAGE'])
 
     count = topics.count(with_limit_and_skip=True)
     total = topics.count()
@@ -57,9 +63,7 @@ def show_topics(page, category=None):
 
     pagination = dict(page=page, pages=total//current_app.config['TOPICS_PER_PAGE']+1)
 
-    print category
-
-    return render_template('topic/topics.html', endpoint='topic.show_topics', topics=topics, category=category, pagination=pagination)
+    return topics, pagination
 
 
 def get_cover_oid(topic):
@@ -75,39 +79,38 @@ def get_cover_oid(topic):
 @topic.route('/hot/', defaults={'page': 1})
 @topic.route('/hot/<int:page>/')
 def show_hot_topics(page):
-    db = MongoDB()
-    topics = db.topic_collection.find(
-        {},
-        {'title': True, 'photos': True, 'category': True, 'rating': True}
-    ).sort([
-        ('rating', -1),
-        ('click_count', -1)
-    ]).skip((page-1)*current_app.config['TOPICS_PER_PAGE']).limit(current_app.config['TOPICS_PER_PAGE'])
+    query = {'status': 'normal'}
+    sort = [('rating', -1), ('click_count', -1)]
+    topics, pagination = load_topics(query=query, sort=sort, page=page)
 
-    count = topics.count(with_limit_and_skip=True)
-    total = topics.count()
+    return render_template('topic/topics.html', endpoint='topic.show_hot_topics', args={}, topics=topics, pagination=pagination)
 
-    topics = list(topics)
-    for topic in topics:
-        topic['cover_oid'] = get_cover_oid(topic)
 
-    pagination = dict(page=page, pages=total//current_app.config['TOPICS_PER_PAGE']+1)
+@topic.route('/search/<key>/', defaults={'page': 1})
+@topic.route('/search/<key>/<int:page>/')
+def show_match_topic(key, page):
+    print(key)
+    query = dict()
+    query['status'] = 'normal'
+    query['title'] = {'$regex': key, '$options': '$i'}
+    sort = [('rating', -1), ('_id', -1)]
+    topics, pagination = load_topics(query=query, sort=sort, page=page)
 
-    return render_template('topic/topics.html', endpoint='topic.show_hot_topics', topics=topics, pagination=pagination)
+    return render_template('topic/topics.html', endpoint='topic.show_match_topic', args={'key': key}, topics=topics, pagination=pagination)
 
 
 @topic.route('/<oid>/')
 def show_topic_detail(oid):
     db = MongoDB()
-    topic_ = db.topic_collection.find_one({'_id': ObjectId(oid)})
-    if not topic_:
+    topic = db.topic_collection.find_one({'_id': ObjectId(oid)})
+    if not topic:
         abort(404)
 
     # rating = topic.get('rating')
 
     # 按顺序查找图片
     photos = []
-    for photo_oid in topic_['photos']:
+    for photo_oid in topic['photos']:
         photo = db.image_collection.find_one({'_id': photo_oid, 'blur': {'$ne': True}})
         if photo:
             photos.append(photo)
@@ -117,7 +120,7 @@ def show_topic_detail(oid):
     # 点击量 +1
     db.topic_collection.update({'_id': ObjectId(oid)}, {'$inc': {'click_count': 1}})
 
-    return render_template('topic/topic_detail.html', topic=topic_, photos=photos)
+    return render_template('topic/topic_detail.html', topic=topic, photos=photos)
 
 
 @topic.route('/<oid>/_title/', methods=['POST'])

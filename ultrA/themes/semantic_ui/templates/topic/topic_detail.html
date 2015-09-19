@@ -2,7 +2,7 @@
 {% set active_page = 'topic' %}
 {% block title %}{{ topic.title }}{% endblock %}
 {% block content %}
-<div class="ui stackable page grid">
+<div class="ui page grid">
   <div class="center aligned row">
     <div class="column">
       <h1 id="title" class="ui header">{{ topic.title }}</h1>
@@ -23,10 +23,14 @@
         </div>
       </div>
 
-      <div id="rating_top" class="ui huge heart rating active" data-rating="{{ topic.rating }} " data-max-rating="5">
+      <div id="rating_top" class="ui huge heart rating active" data-rating="{{ topic.rating }} " data-max-rating="5"></div>
+      <div>
+        <div class="ui label"><i class="heartbeat icon"></i> {{ topic.click_count|d(0) }} </div>
+        <div class="ui label"><i class="signal icon"></i> {{ '{:.0f}%'.format(photos|length/topic.photos|length*100) }} </div>
       </div>
 
       <div class="ui horizontal divider"><i class="camera icon"></i></div>
+
       {% if photos|length %}
       <div class="ui images">
         {% for photo in photos %}
@@ -47,16 +51,14 @@
       </div>
     </div>
   </div>
-  <div class="middle aligned row">
-    <div class="two wide left aligned column">
-      <div id="delete" class="ui circular tiny red button">删除</div>
+  <div class="three column row">
+    <div class="two wide computer four wide mobile left aligned column">
+      <button id="delete" class="mini ui circular red button">删除</button>
     </div>
-    <div class="two wide left aligned column">
-      <a class="ui circular tiny blue button" href="{{ topic.url }}">原帖</a>
+    <div class="two wide computer four wide mobile left aligned column">
+      <a class="mini ui circular blue button" href="{{ topic.url }}">原帖</a>
     </div>
-
-
-    <div class="twelve wide right aligned column">
+    <div class="twelve wide computer eight wide mobile right aligned column">
       <div id="rating_bottom" class="ui huge heart rating active" data-rating="{{ topic.rating }}" data-max-rating="5">
       </div>
     </div>
@@ -93,71 +95,76 @@
 
 {% endblock %}
 {% block script%}
-
 <script>
-/* 复选框初始化 */
-$('.ui.checkbox').checkbox();
+  $(document).ready(function () {
+    /* 禁用顶部评分模块*/
+    $("#rating_top").rating("disable");
 
-/* 评分模块*/
-$("#rating_top").rating("disable");
-
-$("#rating_bottom").rating({
-  clearable: true,
-  onRate: function(value){
-    if (value != "{{ topic.rating }}") {
-      // alert(value);
-      $("#rating_top").rating("set rating", value);
-      $.post("{{ url_for('topic.ajax_edit_rating', oid=topic._id) }}", {
-        rating: value
-      });
-    }
-  }
-});
-
-/* 修改标题模块 */
-$("#title").dblclick(function(){
-  if ($("#title_edit").css("display") == "none") {
-      $("#title_edit").slideDown();
-  }
-  else {
-      $("#title_edit").slideUp();
-  }
-});
-
-$("#save").click(function(){
-    $.post("{{ url_for('topic.ajax_edit_title', oid=topic._id) }}", {
-      title: $('#title_input').val()
-    }, function(data) {
-        if (data.success == true) {
-            $("#title").text(data.title);
-            $("#title_edit").slideUp();
+    /* 启用底部评分模块 */
+    $("#rating_bottom").rating({
+      clearable: true,
+      onRate: function(value){
+        if (value != "{{ topic.rating }}") {
+          // alert(value);
+          $("#rating_top").rating("set rating", value);
+          $.post("{{ url_for('topic.ajax_edit_rating', oid=topic._id) }}", {
+            rating: value
+          });
         }
-    });
-});
-
-$("#cancel").click(function(){
-    $("#title_edit").slideUp();
-});
-
-
-{#
-/* 删除主题 */
-$("#delete").click(function(){
-
-  $('.modal').modal('setting', {
-    closable  : false,
-    onApprove : function() {
-      post_data = {
-        'physical_removal': $("#physical_removal").prop('checked'),
-        'remove_images': $("#remove_images").prop('checked')
       }
-      $.post("{{ url_for('.delete_topic', oid=topic._id) }}", post_data, function(data) {
-             history.go(-1);
-      });
-    }
-  }).modal('show');
-});
-#}
+    });
+
+    /* 修改标题模块 */
+    $("#title").dblclick(function(){
+      if ($("#title_edit").css("display") == "none") {
+          $("#title_edit").slideDown();
+      }
+      else {
+          $("#title_edit").slideUp();
+      }
+    });
+
+    /* 修改标题模块 保存 */
+    $("#save").click(function(){
+        $.post("{{ url_for('topic.ajax_edit_title', oid=topic._id) }}", {
+          title: $('#title_input').val()
+        }, function(data) {
+            if (data.success == true) {
+                $("#title").text(data.title);
+                $("#title_edit").slideUp();
+            }
+        });
+    });
+
+    /* 修改标题模块 取消 */
+    $("#cancel").click(function(){
+        $("#title_edit").slideUp();
+    });
+
+    /* 复选框初始化 */
+    $('.ui.checkbox').checkbox();
+
+    /* 删除主题 */
+    $("#delete").click(function(){
+
+      $('.modal').modal('setting', {
+        closable  : false,
+        onApprove : function() {
+          post_data = {
+            'physical_removal': $("#physical_removal").prop('checked'),
+            'remove_images': $("#remove_images").prop('checked')
+          }
+          {#
+          $.post("{{ url_for('.delete_topic', oid=topic._id) }}", post_data, function(data) {
+                 history.go(-1);
+          });
+          #}
+        }
+      }).modal('show');
+    });
+
+  });
+
 </script>
 
 {% endblock %}

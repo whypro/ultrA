@@ -19,9 +19,9 @@
   </a>
   #}
   <div class="right menu">
-    <div class="item">
+    <div class="ui search item">
       <div class="ui transparent icon input">
-        <input id="key" type="text" placeholder="请输入关键词...">
+        <input id="key" type="text" placeholder="请输入关键词……">
         <i id="search" class="search link icon"></i>
       </div>
     </div>
@@ -29,12 +29,12 @@
 </div>
 
 <script>
-  {#
+
 $("#search").click(function(){
   var key = $("#key").val();
   if (key != "") {
-    window.location.href = "{{ url_for('home.search') }}" + "?key=" + key;
+    window.location.href = "/topic/search/" + key + '/';
   }
 });
-    #}
+
 </script>

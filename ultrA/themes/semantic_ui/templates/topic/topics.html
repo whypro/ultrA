@@ -9,7 +9,7 @@
   {{ topic_card(topic) }}
   {% endfor %}
 
-  {{ render_pagination(pagination, endpoint, category) }}
+  {{ render_pagination(pagination, endpoint, args) }}
 
   <div class="two column centered row">
     <div class="column">
@@ -20,6 +20,11 @@
 {% endblock %}
 {% block script %}
 <script>
+  $(document).ready(function () {
+    /* 禁用评分模块 */
+    $(".rating").rating("disable");
+  });
+
     {#
 $("#more").click(function(){
   // 动态刷新
@@ -40,8 +45,7 @@ $("#more").click(function(){
 });
         #}
 
-/* 评分模块*/
-$(".rating").rating("disable");
+
 
 </script>
 {% endblock %}

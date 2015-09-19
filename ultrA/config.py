@@ -41,9 +41,9 @@ class NormalConfig(DevelopmentConfig):
 
 
 class UltrAConfig(DevelopmentConfig):
-    TOPIC_COLLECTION = 'raw_topic'
-    IMAGE_COLLECTION = 'raw_image'
-    GARBAGE_IMAGE_COLLECTION = 'raw_garbage_image'
+    TOPIC_COLLECTION = 'raw_topics'
+    IMAGE_COLLECTION = 'raw_photos'
+    GARBAGE_IMAGE_COLLECTION = 'raw_blurs'
     if 'Windows' in platform.system():
         MEDIA_PATH = 'I:\\一些资料\\apple\\results'
     else:
