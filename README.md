@@ -61,14 +61,14 @@ relevant = 2*len(intersection(TA-IMAGE-SHA1-LIST, TB-IMAGE-SHA1-LIST)) / (len(TA
 保存爬取到的主题时，遍历所有主题，计算相似度放入 relevant 集合，标记该 topic 的 relevant = True。
 
 ### 垃圾主题管理
-标记垃圾图片，垃圾图片在主题中不显示，列表显示主题的【垃圾度】
+标记垃圾图片，垃圾图片在主题中不显示，列表显示主题的【纯净度】
 
-#### 垃圾度计算时机
+#### 纯净度计算时机
 * 保存爬取到的主题时
 * 标记垃圾图片时
 
 ### 删除主题
 删除可以通过以下方式：
 
-* deleted: 逻辑删除
-* removed: 物理删除
+* deleted: 逻辑删除：仅仅标记为已删除，保留数据库记录与文件
+* removed: 物理删除：

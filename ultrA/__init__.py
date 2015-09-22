@@ -52,5 +52,5 @@ def config_context_processor(app):
     @app.context_processor
     def inject_categories():
         db = MongoDB()
-        categories = db.topic_collection.distinct('category')
+        categories = db.topics.distinct('category')
         return dict(categories=categories)

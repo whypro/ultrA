@@ -34,7 +34,7 @@
       {% if photos|length %}
       <div class="ui images">
         {% for photo in photos %}
-        <a class="ui image" href="">
+        <a class="ui image" href="{{ url_for('photo.show_photo_detail', oid=photo._id) }}">
             <img src="{{ url_for('photo.send_image', size='large', oid=photo._id) }}" />
         </a>
         {% if not loop.last %}<div class="ui divider"></div>{% endif %}

@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 from datetime import datetime
 
-from flask import Blueprint, send_from_directory, current_app, abort, redirect, send_file
+from flask import Blueprint, send_from_directory, current_app, abort
 from flask import url_for, request, jsonify
 from bson.objectid import ObjectId
 
@@ -30,7 +30,7 @@ def show_topics(page, category=None):
         category: same to the arg category
     """
     db = MongoDB()
-    categories = db.topic_collection.distinct('category')
+    categories = db.topics.distinct('category')
     if category and category not in categories:
         abort(404)
 
@@ -49,7 +49,7 @@ def show_topics(page, category=None):
 
 def load_topics(query, sort, page):
     db = MongoDB()
-    topics = db.topic_collection.find(
+    topics = db.topics.find(
         query,
         {'title': True, 'photos': True, 'category': True, 'rating': True}
     ).sort(sort).skip((page-1)*current_app.config['TOPICS_PER_PAGE']).limit(current_app.config['TOPICS_PER_PAGE'])
@@ -69,7 +69,7 @@ def load_topics(query, sort, page):
 def get_cover_oid(topic):
     db = MongoDB()
     for photo_oid in topic['photos']:
-        photo = db.image_collection.find_one({'_id': photo_oid, 'blur': {'$ne': True}})
+        photo = db.photos.find_one({'_id': photo_oid, 'blur': {'$ne': True}})
         if photo:
             return str(photo['_id'])
     return None
@@ -102,7 +102,7 @@ def show_match_topic(key, page):
 @topic.route('/<oid>/')
 def show_topic_detail(oid):
     db = MongoDB()
-    topic = db.topic_collection.find_one({'_id': ObjectId(oid)})
+    topic = db.topics.find_one({'_id': ObjectId(oid)})
     if not topic:
         abort(404)
 
@@ -111,14 +111,14 @@ def show_topic_detail(oid):
     # 按顺序查找图片
     photos = []
     for photo_oid in topic['photos']:
-        photo = db.image_collection.find_one({'_id': photo_oid, 'blur': {'$ne': True}})
+        photo = db.photos.find_one({'_id': photo_oid, 'blur': {'$ne': True}})
         if photo:
             photos.append(photo)
 
     print len(photos)
 
     # 点击量 +1
-    db.topic_collection.update({'_id': ObjectId(oid)}, {'$inc': {'click_count': 1}})
+    db.topics.update({'_id': ObjectId(oid)}, {'$inc': {'click_count': 1}})
 
     return render_template('topic/topic_detail.html', topic=topic, photos=photos)
 
@@ -131,7 +131,7 @@ def ajax_edit_title(oid):
         abort(400)
 
     db = MongoDB()
-    db.topic_collection.update({'_id': ObjectId(oid)}, {'$set': {'title': title}})
+    db.topics.update({'_id': ObjectId(oid)}, {'$set': {'title': title}})
 
     return jsonify(success=True)
 
@@ -146,8 +146,8 @@ def ajax_edit_rating(oid):
     db = MongoDB()
 
     if rating:
-        db.topic_collection.update({'_id': ObjectId(oid)}, {'$set': {'modify_time': datetime.utcnow(), 'rating': rating}})
+        db.topics.update({'_id': ObjectId(oid)}, {'$set': {'modify_time': datetime.utcnow(), 'rating': rating}})
     else:
-        db.topic_collection.update({'_id': ObjectId(oid)}, {'$unset': {'modify_time': datetime.utcnow(), 'rating': ''}})
+        db.topics.update({'_id': ObjectId(oid)}, {'$unset': {'modify_time': datetime.utcnow(), 'rating': ''}})
 
     return jsonify(success=True)

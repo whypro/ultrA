@@ -2,7 +2,7 @@
   <div class="four wide column">
 
     <div class="ui card">
-      <a class="image" href="{{ url_for('topic.show_topic_detail', oid=topic._id) }}">
+      <a class="image" href="{{ url_for('topic.show_topic_detail', oid=topic._id) }}" target="_blank">
         <img src="{% if topic.cover_oid %}{{ url_for('photo.send_image', size='thumb', oid=topic.cover_oid) }}{% else %}{{ url_for('static', filename='images/cover-default.jpg') }}{% endif %}" alt="{{ topic.title }}" />
       </a>
 

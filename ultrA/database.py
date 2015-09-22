@@ -3,15 +3,17 @@ from pymongo import MongoClient
 from flask import current_app
 
 
-class MongoDB():
+class MongoDB(object):
     def __init__(self):
-        client = MongoClient(
+        self.__client = MongoClient(
             host=current_app.config['DB_HOST'],
             port=current_app.config['DB_PORT'],
             tz_aware=True,
         )
-        db = client[current_app.config['DB_NAME']]
-        self.topic_collection = db[current_app.config['TOPIC_COLLECTION']]
-        self.image_collection = db[current_app.config['IMAGE_COLLECTION']]
-        self.garbage_image_collection = db[current_app.config['GARBAGE_IMAGE_COLLECTION']]
+        db = self.__client[current_app.config['DB_NAME']]
+        self.topics = db[current_app.config['TOPIC_COLLECTION']]
+        self.photos = db[current_app.config['PHOTO_COLLECTION']]
+        self.blurs = db[current_app.config['BLUR_COLLECTION']]
 
+    def __del__(self):
+        self.__client.close()

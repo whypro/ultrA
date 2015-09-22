@@ -31,8 +31,8 @@ class DevelopmentConfig(Config):
 
 class NormalConfig(DevelopmentConfig):
     TOPIC_COLLECTION = 'test_topic'
-    IMAGE_COLLECTION = 'test_image'
-    GARBAGE_IMAGE_COLLECTION = 'test_garbage_image'
+    PHOTO_COLLECTION = 'test_image'
+    BLUR_COLLECTION = 'test_garbage_image'
 
     if 'Windows' in platform.system():
         MEDIA_PATH = 'E:\\照片'
@@ -42,8 +42,8 @@ class NormalConfig(DevelopmentConfig):
 
 class UltrAConfig(DevelopmentConfig):
     TOPIC_COLLECTION = 'raw_topics'
-    IMAGE_COLLECTION = 'raw_photos'
-    GARBAGE_IMAGE_COLLECTION = 'raw_blurs'
+    PHOTO_COLLECTION = 'raw_photos'
+    BLUR_COLLECTION = 'raw_blurs'
     if 'Windows' in platform.system():
         MEDIA_PATH = 'I:\\一些资料\\apple\\results'
     else:
