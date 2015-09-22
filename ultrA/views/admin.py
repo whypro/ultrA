@@ -73,7 +73,7 @@ def calculate_similarity():
                 # 更新或插入相似度
                 similarity_record = db.similarities.find_one({'topics': {'$all': [topic_A['_id'], topic_B['_id']]}})
                 if similarity_record:
-                    db.similarities.update(similarity_record['_id'], {'$set': {'value': similarity_value}})
+                    db.similarities.update({'_id': similarity_record['_id']}, {'$set': {'value': similarity_value}})
                 else:
                     db.similarities.insert({'topics': [topic_A['_id'], topic_B['_id']], 'value': similarity_value})
         db.topics.update({'_id': topic_A['_id']}, {'$set': {'similarity_calculated': True}})
@@ -82,10 +82,14 @@ def calculate_similarity():
 @admin.route('/topic/similarity/', defaults={'page': 1})
 @admin.route('/topic/similarity/<int:page>/')
 def show_similar_topics(page):
+    """显示相似主题"""
     db = MongoDB()
-    similarities = db.similarities.find()
+    sort = [('value', -1)]
+    similarities = db.similarities.find().sort(sort).skip((page-1)*current_app.config['TOPICS_PER_ADMIN_PAGE']).limit(current_app.config['TOPICS_PER_ADMIN_PAGE'])
+    total = similarities.count()
     similarities = list(similarities)
     for similarity in similarities:
         similarity['topics'] = db.topics.find({'_id': {'$in': similarity['topics']}})
     # print similarities
-    return render_template('admin/similarities.html', similarities=similarities)
+    pagination = dict(page=page, pages=total//current_app.config['TOPICS_PER_ADMIN_PAGE']+1)
+    return render_template('admin/similarities.html', similarities=similarities, pagination=pagination)

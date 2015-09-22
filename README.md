@@ -47,7 +47,7 @@
 ### Blur
 * sha1: SHA-1 值
 
-### Relevant
+### Similarity
 * topics
 * value
 
@@ -56,12 +56,12 @@
 分析所有主题，罗列两个相似主题，显示主题A【标题】、主题A【图片数】，主题B【标题】、主题B【图片数】，【相似度】
 
 #### 相似主题分析算法
-获取主题A所有图片的 SHA-1 值数组，与主题B求交集。随后标记 topic 的 relevant_scanned = True
+获取主题A所有图片的 SHA-1 值数组，与主题B求交集。随后标记 topic 的 similarity_calculated = True
 
-relevant = 2*len(intersection(TA-IMAGE-SHA1-LIST, TB-IMAGE-SHA1-LIST)) / (len(TA-IMAGE-SHA1-LIST) + len(TB-IMAGE-SHA1-LIST))
+		similarity = 2*len(intersection(TA-IMAGE-SHA1-LIST, TB-IMAGE-SHA1-LIST)) / (len(TA-IMAGE-SHA1-LIST) + len(TB-IMAGE-SHA1-LIST))
 
 #### 相似度计算时机
-保存爬取到的主题时，遍历所有主题，计算相似度，如果 > 0 则放入 relevant 集合，并标记该 topic 的 relevant_calculated = True。
+保存爬取到的主题时，遍历所有主题，计算相似度，如果 > 0 则放入 relevant 集合，并标记该 topic 的 similarity_calculated = True。
 
 ### 垃圾主题管理
 标记垃圾图片，垃圾图片在主题中不显示，列表显示主题的【纯净度】
