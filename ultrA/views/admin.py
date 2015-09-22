@@ -57,7 +57,8 @@ def load_topics(query, sort, page):
 def calculate_similarity():
     """根据 SHA-1 计算两个主题的相似度"""
     db = MongoDB()
-    for topic_A in db.topics.find({'similarity_calculated': {'$ne': True}, 'status': 'normal'}):
+    topic_A_cursor = db.topics.find({'similarity_calculated': {'$ne': True}, 'status': 'normal'}, timeout=False)
+    for topic_A in topic_A_cursor:
         photos_A = db.photos.find({'_id': {'$in': topic_A['photos']}, 'blur': {'$ne': True}})
         shas_A = [photo['sha1'] for photo in photos_A]
         for topic_B in db.topics.find({'status': 'normal', '_id': {'$ne': topic_A['_id']}}):
@@ -77,7 +78,8 @@ def calculate_similarity():
                 else:
                     db.similarities.insert({'topics': [topic_A['_id'], topic_B['_id']], 'value': similarity_value})
         db.topics.update({'_id': topic_A['_id']}, {'$set': {'similarity_calculated': True}})
-
+    topic_A_cursor.close()
+    return jsonify(status=200)
 
 @admin.route('/topic/similarity/', defaults={'page': 1})
 @admin.route('/topic/similarity/<int:page>/')

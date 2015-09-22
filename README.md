@@ -73,13 +73,17 @@
 ### 删除主题
 删除可以通过以下方式：
 
-* deleted: 逻辑删除
+* status -> deleted: 逻辑删除（不释放空间）
 	* 标记为已删除
 	* 保留 photos 集合所对应的记录
 	* 保留 topics 集合的 photos 字段
 	* 保留文件
-* removed: 物理删除
+* status -> removed: 物理删除（释放空间）
 	* 标记为已移除
 	* 删除 photos 集合所对应的记录
 	* 清空 topics 集合的 photos 字段
 	* 删除文件
+* 完全删除（如果需要重新下载可使用该方式）
+	* 删除 photos 集合中对应的记录
+	* 删除 topics 集合中对应的记录
+	
