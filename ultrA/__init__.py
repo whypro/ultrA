@@ -22,7 +22,7 @@ def config_blueprints(app):
     app.register_blueprint(views.home)
     app.register_blueprint(views.topic)
     app.register_blueprint(views.photo)
-    # app.register_blueprint(views.admin)
+    app.register_blueprint(views.admin)
 
 
 def configure_theme(app):

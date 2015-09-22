@@ -22,6 +22,7 @@ class Config(object):
     IMAGE_LARGE = 1024
 
     TOPICS_PER_PAGE = 24
+    TOPICS_PER_ADMIN_PAGE = 100
 
 
 class DevelopmentConfig(Config):

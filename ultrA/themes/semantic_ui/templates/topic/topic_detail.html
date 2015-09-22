@@ -26,7 +26,7 @@
       <div id="rating_top" class="ui huge heart rating active" data-rating="{{ topic.rating }} " data-max-rating="5"></div>
       <div>
         <div class="ui label"><i class="heartbeat icon"></i> {{ topic.click_count|d(0) }} </div>
-        <div class="ui label"><i class="signal icon"></i> {{ '{:.0f}%'.format(photos|length/topic.photos|length*100) }} </div>
+        <div class="ui label"><i class="signal icon"></i> {{ '{:.0f}%'.format(topic.purity*100) }} </div>
       </div>
 
       <div class="ui horizontal divider"><i class="camera icon"></i></div>

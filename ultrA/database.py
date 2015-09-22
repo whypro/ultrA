@@ -14,6 +14,7 @@ class MongoDB(object):
         self.topics = db[current_app.config['TOPIC_COLLECTION']]
         self.photos = db[current_app.config['PHOTO_COLLECTION']]
         self.blurs = db[current_app.config['BLUR_COLLECTION']]
+        self.similarities = db['raw_similarities']
 
     def __del__(self):
         self.__client.close()

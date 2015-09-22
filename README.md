@@ -47,6 +47,9 @@
 ### Blur
 * sha1: SHA-1 值
 
+### Relevant
+* topics
+* value
 
 ## 主要功能
 ### 相似主题管理
@@ -58,7 +61,7 @@
 relevant = 2*len(intersection(TA-IMAGE-SHA1-LIST, TB-IMAGE-SHA1-LIST)) / (len(TA-IMAGE-SHA1-LIST) + len(TB-IMAGE-SHA1-LIST))
 
 #### 相似度计算时机
-保存爬取到的主题时，遍历所有主题，计算相似度放入 relevant 集合，标记该 topic 的 relevant = True。
+保存爬取到的主题时，遍历所有主题，计算相似度，如果 > 0 则放入 relevant 集合，并标记该 topic 的 relevant_calculated = True。
 
 ### 垃圾主题管理
 标记垃圾图片，垃圾图片在主题中不显示，列表显示主题的【纯净度】
@@ -70,5 +73,13 @@ relevant = 2*len(intersection(TA-IMAGE-SHA1-LIST, TB-IMAGE-SHA1-LIST)) / (len(TA
 ### 删除主题
 删除可以通过以下方式：
 
-* deleted: 逻辑删除：仅仅标记为已删除，保留数据库记录与文件
-* removed: 物理删除：
+* deleted: 逻辑删除
+	* 标记为已删除
+	* 保留 photos 集合所对应的记录
+	* 保留 topics 集合的 photos 字段
+	* 保留文件
+* removed: 物理删除
+	* 标记为已移除
+	* 删除 photos 集合所对应的记录
+	* 清空 topics 集合的 photos 字段
+	* 删除文件

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+from __future__ import unicode_literals, division
 from datetime import datetime
 
 from flask import Blueprint, send_from_directory, current_app, abort
@@ -106,8 +106,6 @@ def show_topic_detail(oid):
     if not topic:
         abort(404)
 
-    # rating = topic.get('rating')
-
     # 按顺序查找图片
     photos = []
     for photo_oid in topic['photos']:
@@ -115,7 +113,8 @@ def show_topic_detail(oid):
         if photo:
             photos.append(photo)
 
-    print len(photos)
+    # 计算纯净度
+    topic['purity'] = len(photos) / len(topic['photos'])
 
     # 点击量 +1
     db.topics.update({'_id': ObjectId(oid)}, {'$inc': {'click_count': 1}})

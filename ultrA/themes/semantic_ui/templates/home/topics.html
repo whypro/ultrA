@@ -21,6 +21,7 @@
 
 {% macro render_pagination(pagination, endpoint) %}
   <div class="two column right aligned row">
+    <div>{{ pagination.page }} / {{ pagination.pages }}</div>
     <div class="ui borderless pagination menu">
       {% if pagination.page > 1 -%}
       <a class="item" href="{{ url_for(endpoint, page=pagination.page-1, tag=tag) }}"><i class="left arrow icon"></i></a>
