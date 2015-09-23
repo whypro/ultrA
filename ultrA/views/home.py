@@ -6,11 +6,13 @@ import shutil
 import re
 from StringIO import StringIO
 from bson.objectid import ObjectId
+
+from PIL import Image
 from flask import Blueprint, send_from_directory, current_app, abort, redirect, send_file
 from flask import url_for, request, jsonify
-from PIL import Image
-from ultrA.helpers import render_template
-from ultrA.database import MongoDB
+
+from ..helpers import render_template
+from ..database import db
 
 
 home = Blueprint('home', __name__)

@@ -7,7 +7,7 @@ from time import clock
 from flask import Blueprint, request, current_app, jsonify, redirect, url_for
 
 from ..helpers import render_template
-from ..database import MongoDB
+from ..database import db
 
 
 admin = Blueprint('admin', __name__, url_prefix='/admin')
@@ -31,7 +31,6 @@ def show_topics(page):
 
 
 def load_topics(query, sort, page):
-    db = MongoDB()
     topics = db.topics.find(
         query
     ).sort(sort).skip((page-1)*current_app.config['TOPICS_PER_ADMIN_PAGE']).limit(current_app.config['TOPICS_PER_ADMIN_PAGE'])
@@ -56,7 +55,6 @@ def load_topics(query, sort, page):
 @admin.route('/topic/similarity/calculate/')
 def calculate_similarity():
     """根据 SHA-1 计算两个主题的相似度"""
-    db = MongoDB()
     topic_A_cursor = db.topics.find({'similarity_calculated': {'$ne': True}, 'status': 'normal'}, timeout=False)
     for topic_A in topic_A_cursor:
         photos_A = db.photos.find({'_id': {'$in': topic_A['photos']}, 'blur': {'$ne': True}})
@@ -77,15 +75,20 @@ def calculate_similarity():
                     db.similarities.update({'_id': similarity_record['_id']}, {'$set': {'value': similarity_value}})
                 else:
                     db.similarities.insert({'topics': [topic_A['_id'], topic_B['_id']], 'value': similarity_value})
+            else: 
+                # 可能是重新计算后 = 0，因此需要删除
+                # print 'remove similarity...'
+                db.similarities.remove({'topics': {'$all': [topic_A['_id'], topic_B['_id']]}})
+
         db.topics.update({'_id': topic_A['_id']}, {'$set': {'similarity_calculated': True}})
     topic_A_cursor.close()
     return jsonify(status=200)
+
 
 @admin.route('/topic/similarity/', defaults={'page': 1})
 @admin.route('/topic/similarity/<int:page>/')
 def show_similar_topics(page):
     """显示相似主题"""
-    db = MongoDB()
     sort = [('value', -1)]
     similarities = db.similarities.find().sort(sort).skip((page-1)*current_app.config['TOPICS_PER_ADMIN_PAGE']).limit(current_app.config['TOPICS_PER_ADMIN_PAGE'])
     total = similarities.count()

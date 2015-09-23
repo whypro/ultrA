@@ -10,7 +10,7 @@ from flask import jsonify
 from PIL import Image
 
 from ..helpers import render_template
-from ..database import MongoDB
+from ..database import db
 
 
 photo = Blueprint('photo', __name__, url_prefix='/photo')
@@ -19,7 +19,6 @@ photo = Blueprint('photo', __name__, url_prefix='/photo')
 def send_image(size, oid):
     if size not in ('origin', 'large', 'thumb'):
         abort(400)
-    db = MongoDB()
     image = db.photos.find_one({'_id': ObjectId(oid)})
     if not image:
         abort(404)
@@ -60,7 +59,6 @@ def send_image(size, oid):
 
 @photo.route('/show/<oid>/')
 def show_photo_detail(oid):
-    db = MongoDB()
     photo = db.photos.find_one({'_id': ObjectId(oid)})
     return render_template('photo/photo_detail.html', photo=photo)
 
@@ -68,10 +66,16 @@ def show_photo_detail(oid):
 @photo.route('/<oid>/_blur/', methods=['POST'])
 def ajax_blur_photo(oid):
     """将图片标记为垃圾图片"""
-    db = MongoDB()
     photo = db.photos.find_one({'_id': ObjectId(oid)})
     if not photo:
         return jsonify(status=404)
     db.photos.update({'sha1': photo['sha1']}, {'$set': {'blur': True}}, multi=True)
     db.blurs.update({'sha1': photo['sha1']}, {'sha1': photo['sha1']}, upsert=True)
+
+    # 标记所有相关主题重新计算相关度
+    photos = db.photos.find({'sha1': photo['sha1']}, {'topic': True})
+    topic_oids = set([p['topic'] for p in photos if 'topic' in p])  # 去重
+    for topic_oid in topic_oids:
+        db.topics.update({'_id': topic_oid}, {'$set': {'similarity_calculated': False}})
+
     return jsonify(status=200)

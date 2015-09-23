@@ -7,7 +7,7 @@ from flask import url_for, request, jsonify
 from bson.objectid import ObjectId
 
 from ..helpers import render_template
-from ..database import MongoDB
+from ..database import db
 
 
 topic = Blueprint('topic', __name__, url_prefix='/topic')
@@ -29,7 +29,6 @@ def show_topics(page, category=None):
         topics: a list of topics
         category: same to the arg category
     """
-    db = MongoDB()
     categories = db.topics.distinct('category')
     if category and category not in categories:
         abort(404)
@@ -48,7 +47,6 @@ def show_topics(page, category=None):
 
 
 def load_topics(query, sort, page):
-    db = MongoDB()
     topics = db.topics.find(
         query,
         {'title': True, 'photos': True, 'category': True, 'rating': True}
@@ -67,7 +65,6 @@ def load_topics(query, sort, page):
 
 
 def get_cover_oid(topic):
-    db = MongoDB()
     for photo_oid in topic['photos']:
         photo = db.photos.find_one({'_id': photo_oid, 'blur': {'$ne': True}})
         if photo:
@@ -101,7 +98,6 @@ def show_match_topic(key, page):
 
 @topic.route('/<oid>/')
 def show_topic_detail(oid):
-    db = MongoDB()
     topic = db.topics.find_one({'_id': ObjectId(oid)})
     if not topic:
         abort(404)
@@ -129,7 +125,6 @@ def ajax_edit_title(oid):
     if not title:
         abort(400)
 
-    db = MongoDB()
     db.topics.update({'_id': ObjectId(oid)}, {'$set': {'title': title}})
 
     return jsonify(success=True)
@@ -142,7 +137,6 @@ def ajax_edit_rating(oid):
         abort(400)
 
     rating = int(rating)
-    db = MongoDB()
 
     if rating:
         db.topics.update({'_id': ObjectId(oid)}, {'$set': {'modify_time': datetime.utcnow(), 'rating': rating}})

@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+
 from flask import Flask, g, flash, redirect, url_for
 from flask.ext.themes import setup_themes
 from pymongo import MongoClient
-from ultrA import views
-from ultrA.database import MongoDB
+
+from . import views
+from .database import db
 
 
 def create_app(config=None):
@@ -14,6 +16,8 @@ def create_app(config=None):
     config_error_handlers(app)
     configure_theme(app)
     config_context_processor(app)
+
+    db.init_app(app)
 
     return app
 
@@ -51,6 +55,5 @@ def config_error_handlers(app):
 def config_context_processor(app):
     @app.context_processor
     def inject_categories():
-        db = MongoDB()
         categories = db.topics.distinct('category')
         return dict(categories=categories)

@@ -46,7 +46,7 @@ class UltrAConfig(DevelopmentConfig):
     PHOTO_COLLECTION = 'raw_photos'
     BLUR_COLLECTION = 'raw_blurs'
     if 'Windows' in platform.system():
-        MEDIA_PATH = 'I:\\一些资料\\apple\\results'
+        MEDIA_PATH = 'I:\\Data\\Files\\ultrA'
     else:
         MEDIA_PATH = '/var/run/media/whypro/4. Backups/apple/results/'
 
