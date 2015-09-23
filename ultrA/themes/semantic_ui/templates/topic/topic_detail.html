@@ -126,19 +126,19 @@
 
     /* 修改标题模块 保存 */
     $("#save").click(function(){
-        $.post("{{ url_for('topic.ajax_edit_title', oid=topic._id) }}", {
-          title: $('#title_input').val()
-        }, function(data) {
-            if (data.success == true) {
-                $("#title").text(data.title);
-                $("#title_edit").slideUp();
-            }
-        });
+      $.post("{{ url_for('topic.ajax_edit_title', oid=topic._id) }}", {
+        title: $('#title_input').val()
+      }, function(data) {
+        if (data.success == true) {
+          $("#title").text(data.title);
+          $("#title_edit").slideUp();
+        }
+      });
     });
 
     /* 修改标题模块 取消 */
     $("#cancel").click(function(){
-        $("#title_edit").slideUp();
+      $("#title_edit").slideUp();
     });
 
     /* 复选框初始化 */
@@ -151,14 +151,14 @@
         closable  : false,
         onApprove : function() {
           post_data = {
-            'physical_removal': $("#physical_removal").prop('checked'),
-            'remove_images': $("#remove_images").prop('checked')
-          }
-          {#
-          $.post("{{ url_for('.delete_topic', oid=topic._id) }}", post_data, function(data) {
-                 history.go(-1);
+            'delete_type': 'remove',
+            // 'physical_removal': $("#physical_removal").prop('checked'),
+            // 'remove_images': $("#remove_images").prop('checked')
+          };
+
+          $.post("{{ url_for('topic.ajax_delete', oid=topic._id) }}", post_data, function(data) {
+            // history.go(-1);
           });
-          #}
         }
       }).modal('show');
     });

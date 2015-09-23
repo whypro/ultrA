@@ -41,11 +41,8 @@ def load_topics(query, sort, page):
     topics = list(topics)
     for topic in topics:
         # 计算每个主题的【纯净度】
-        photo_num = len(topic['photos'])
-        if photo_num:
-            topic['purity'] = db.photos.find({'_id': {'$in': topic['photos']}, 'blur': {'$ne': True}}).count() / photo_num
-        else:
-            topic['purity'] = photo_num
+        photo_num = db.photos.find({'_id': {'$in': topic['photos']}, 'blur': {'$ne': True}}).count()
+        topic['purity'] = photo_num / len(topic['photos']) if topic['photos'] else 0
 
     pagination = dict(page=page, pages=total//current_app.config['TOPICS_PER_ADMIN_PAGE']+1)
 

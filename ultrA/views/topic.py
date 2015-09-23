@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, division
 from datetime import datetime
+import os
+import shutil
 
 from flask import Blueprint, send_from_directory, current_app, abort
 from flask import url_for, request, jsonify
@@ -110,7 +112,7 @@ def show_topic_detail(oid):
             photos.append(photo)
 
     # 计算纯净度
-    topic['purity'] = len(photos) / len(topic['photos'])
+    topic['purity'] = len(photos) / len(topic['photos']) if topic['photos'] else 0
 
     # 点击量 +1
     db.topics.update({'_id': ObjectId(oid)}, {'$inc': {'click_count': 1}})
@@ -144,3 +146,48 @@ def ajax_edit_rating(oid):
         db.topics.update({'_id': ObjectId(oid)}, {'$unset': {'modify_time': datetime.utcnow(), 'rating': ''}})
 
     return jsonify(success=True)
+
+
+@topic.route('/<oid>/_delete/', methods=['POST'])
+def ajax_delete(oid):
+    delete_type = request.form.get('delete_type')
+    if delete_type not in ('delete', 'remove', 'wipe'):
+        abort(400)
+
+    if delete_type == 'delete':
+        # 仅标记为已删除
+        db.topics.update({'_id': ObjectId(oid)}, {'$set': {'status': 'deleted'}})
+        print 'delete'
+    elif delete_type == 'remove':
+        # 删除/数据库记录
+        remove_topic_dir(oid)
+        db.photos.remove({'topic': ObjectId(oid)})
+        db.topics.update({'_id': ObjectId(oid)}, {'$set': {'photos': [], 'status': 'removed'}})
+        print 'remove'
+    elif delete_type == 'wipe':
+        # 删除对应目录
+        remove_topic_dir(oid)
+        # 删除数据库记录
+        db.photos.remove({'topic': ObjectId(oid)})
+        db.topics.remove({'_id': ObjectId(oid)})
+        print 'wipe'
+
+    return jsonify(status=200)
+
+def remove_topic_dir(oid):
+    # 删除对应目录
+    topic_path = None
+    topic = db.topics.find_one({'_id': ObjectId(oid)}, {'path': True})
+    if topic:
+        if 'path' in topic:
+            # 首先从 topics 集合中找 path
+            topic_path = os.path.join(current_app.config['MEDIA_PATH'], topic['path'])
+        else:
+            # 其次从 photos 集合中生成 path
+            first_photo = db.photos.find_one({'topic': ObjectId(oid)})
+            if first_photo:
+                topic_path = os.path.dirname(os.path.join(current_app.config['MEDIA_PATH'], first_photo['path']))
+
+    if topic_path and os.path.exists(topic_path):
+        print topic_path
+        shutil.rmtree(topic_path)
