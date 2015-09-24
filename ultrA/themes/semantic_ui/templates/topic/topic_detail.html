@@ -51,14 +51,16 @@
       </div>
     </div>
   </div>
-  <div class="three column row">
+  <div class="two column row">
     <div class="two wide computer four wide mobile left aligned column">
       <button id="delete" class="mini ui circular red button">删除</button>
     </div>
     <div class="two wide computer four wide mobile left aligned column">
       <a class="mini ui circular blue button" href="{{ topic.url }}">原帖</a>
     </div>
-    <div class="twelve wide computer eight wide mobile right aligned column">
+  </div>
+  <div class="row">
+    <div class="right aligned column">
       <div id="rating_bottom" class="ui huge heart rating active" data-rating="{{ topic.rating }}" data-max-rating="5">
       </div>
     </div>
@@ -104,13 +106,11 @@
     $("#rating_bottom").rating({
       clearable: true,
       onRate: function(value){
-        if (value != "{{ topic.rating }}") {
-          // alert(value);
-          $("#rating_top").rating("set rating", value);
-          $.post("{{ url_for('topic.ajax_edit_rating', oid=topic._id) }}", {
-            rating: value
-          });
-        }
+        // alert(value);
+        $("#rating_top").rating("set rating", value);
+        $.post("{{ url_for('topic.ajax_edit_rating', oid=topic._id) }}", {
+          rating: value
+        });
       }
     });
 

@@ -76,6 +76,6 @@ def ajax_blur_photo(oid):
     photos = db.photos.find({'sha1': photo['sha1']}, {'topic': True})
     topic_oids = set([p['topic'] for p in photos if 'topic' in p])  # 去重
     for topic_oid in topic_oids:
-        db.topics.update({'_id': topic_oid}, {'$set': {'similarity_calculated': False}})
+        db.topics.update({'_id': topic_oid}, {'$set': {'similarity_calculated': False, 'modify_time': datetime.utcnow()}})
 
     return jsonify(status=200)

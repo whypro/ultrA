@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, division
-from datetime import datetime
+import datetime
 import os
 import shutil
 
@@ -127,7 +127,7 @@ def ajax_edit_title(oid):
     if not title:
         abort(400)
 
-    db.topics.update({'_id': ObjectId(oid)}, {'$set': {'title': title}})
+    db.topics.update({'_id': ObjectId(oid)}, {'$set': {'title': title, 'modify_time': datetime.datetime.utcnow()}})
 
     return jsonify(success=True)
 
@@ -141,9 +141,9 @@ def ajax_edit_rating(oid):
     rating = int(rating)
 
     if rating:
-        db.topics.update({'_id': ObjectId(oid)}, {'$set': {'modify_time': datetime.utcnow(), 'rating': rating}})
+        db.topics.update({'_id': ObjectId(oid)}, {'$set': {'rating': rating, 'modify_time': datetime.datetime.utcnow()}})
     else:
-        db.topics.update({'_id': ObjectId(oid)}, {'$unset': {'modify_time': datetime.utcnow(), 'rating': ''}})
+        db.topics.update({'_id': ObjectId(oid)}, {'$set': {'modify_time': datetime.datetime.utcnow()}, '$unset': {'rating': ''}})
 
     return jsonify(success=True)
 
@@ -156,13 +156,13 @@ def ajax_delete(oid):
 
     if delete_type == 'delete':
         # 仅标记为已删除
-        db.topics.update({'_id': ObjectId(oid)}, {'$set': {'status': 'deleted'}})
+        db.topics.update({'_id': ObjectId(oid)}, {'$set': {'status': 'deleted', 'modify_time': datetime.datetime.utcnow()}})
         print 'delete'
     elif delete_type == 'remove':
         # 删除/数据库记录
         remove_topic_dir(oid)
         db.photos.remove({'topic': ObjectId(oid)})
-        db.topics.update({'_id': ObjectId(oid)}, {'$set': {'photos': [], 'status': 'removed'}})
+        db.topics.update({'_id': ObjectId(oid)}, {'$set': {'photos': [], 'status': 'removed', 'modify_time': datetime.datetime.utcnow()}})
         print 'remove'
     elif delete_type == 'wipe':
         # 删除对应目录

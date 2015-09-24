@@ -53,11 +53,15 @@ def load_topics(query, sort, page):
 def calculate_similarity():
     """根据 SHA-1 计算两个主题的相似度"""
     topic_A_cursor = db.topics.find({'similarity_calculated': {'$ne': True}, 'status': 'normal'}, timeout=False)
-    for topic_A in topic_A_cursor:
-        photos_A = db.photos.find({'_id': {'$in': topic_A['photos']}, 'blur': {'$ne': True}})
+    count = topic_A_cursor.count()
+    for i, topic_A in enumerate(topic_A_cursor):
+        print 'similarity_calculating:', i, '/', count
+        photos_A = db.photos.find({'topic': topic_A['_id'], 'blur': {'$ne': True}})
+        # photos_A = db.photos.find({'_id': {'$in': topic_A['photos']}, 'blur': {'$ne': True}})
         shas_A = [photo['sha1'] for photo in photos_A]
         for topic_B in db.topics.find({'status': 'normal', '_id': {'$ne': topic_A['_id']}}):
-            photos_B = db.photos.find({'_id': {'$in': topic_B['photos']}, 'blur': {'$ne': True}})
+            photos_B = db.photos.find({'topic': topic_B['_id'], 'blur': {'$ne': True}})
+            # photos_B = db.photos.find({'_id': {'$in': topic_B['photos']}, 'blur': {'$ne': True}})
             shas_B = [photo['sha1'] for photo in photos_B]
             # 防止被 0 除
             if not shas_A and not shas_B:
@@ -75,9 +79,10 @@ def calculate_similarity():
             else: 
                 # 可能是重新计算后 = 0，因此需要删除
                 # print 'remove similarity...'
-                db.similarities.remove({'topics': {'$all': [topic_A['_id'], topic_B['_id']]}})
+                # if db.similarities.find({'topics': {'$all': [topic_A['_id'], topic_B['_id']]}}).count():
+                db.similarities.remove({'topics': {'$all': [topic_A['_id'], topic_B['_id']]}}, multi=False)
 
-        db.topics.update({'_id': topic_A['_id']}, {'$set': {'similarity_calculated': True}})
+        db.topics.update({'_id': topic_A['_id']}, {'$set': {'similarity_calculated': True, 'modify_time': datetime.utcnow()}})
     topic_A_cursor.close()
     return jsonify(status=200)
 

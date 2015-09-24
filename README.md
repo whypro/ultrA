@@ -58,17 +58,24 @@
 #### 相似主题分析算法
 获取主题A所有图片的 SHA-1 值数组，与主题B求交集。随后标记 topic 的 similarity_calculated = True
 
-		similarity = 2*len(intersection(TA-IMAGE-SHA1-LIST, TB-IMAGE-SHA1-LIST)) / (len(TA-IMAGE-SHA1-LIST) + len(TB-IMAGE-SHA1-LIST))
+	similarity = 2*len(intersection(TA-IMAGE-SHA1-LIST, TB-IMAGE-SHA1-LIST)) / (len(TA-IMAGE-SHA1-LIST) + len(TB-IMAGE-SHA1-LIST))
 
 #### 相似度计算时机
-保存爬取到的主题时，遍历所有主题，计算相似度，如果 > 0 则放入 relevant 集合，并标记该 topic 的 similarity_calculated = True。
+* 保存爬取到的主题时，遍历所有主题，计算相似度，如果 > 0 则放入 relevant 集合，并标记该 topic 的 similarity_calculated = True。
+* 标记垃圾图片时，将所有与之相关的 topic 标记为 similarity_calculated = False
+* 手动运行
 
 ### 垃圾主题管理
-标记垃圾图片，垃圾图片在主题中不显示，列表显示主题的【纯净度】
+标记垃圾图片，垃圾图片在主题中不显示，列表显示主题的【纯净度】。
 
+	purity = (len(topic['photos']) - len(blurs)) / len(topic['photos'])
+
+<!--
 #### 纯净度计算时机
 * 保存爬取到的主题时
 * 标记垃圾图片时
+-->
+
 
 ### 删除主题
 删除可以通过以下方式：
@@ -83,7 +90,7 @@
 	* 删除 photos 集合所对应的记录
 	* 清空 topics 集合的 photos 字段
 	* 删除文件
-* wipe 完全删除（如果需要重新下载可使用该方式）
+* wipe 完全删除（如果需要重新爬取时可使用该方式）
 	* 删除 photos 集合中对应的记录
 	* 删除 topics 集合中对应的记录
 	
