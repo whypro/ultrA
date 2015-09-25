@@ -3,6 +3,7 @@ from __future__ import unicode_literals, division
 import datetime
 import os
 import shutil
+import pytz
 
 from flask import Blueprint, send_from_directory, current_app, abort
 from flask import url_for, request, jsonify
@@ -57,9 +58,11 @@ def load_topics(query, sort, page):
     count = topics.count(with_limit_and_skip=True)
     total = topics.count()
 
+    
     topics = list(topics)
     for topic in topics:
         topic['cover_oid'] = get_cover_oid(topic)
+        topic['modify_time'] = get_modify_time(topic)
 
     pagination = dict(page=page, pages=total//current_app.config['TOPICS_PER_PAGE']+1)
 
@@ -73,6 +76,17 @@ def get_cover_oid(topic):
             return str(photo['_id'])
     return None
 
+
+def get_modify_time(topic):
+    if 'modify_time' in topic:
+        tm = topic['modify_time']
+    elif 'create_time' in topic:
+        tm = topic['create_time']
+    else:
+        return None
+
+    tz = pytz.timezone(current_app.config['TIME_ZONE'])
+    return tm.astimezone(tz).strftime('%Y-%m-%d %H:%M')
 
 
 @topic.route('/hot/', defaults={'page': 1})
@@ -113,6 +127,8 @@ def show_topic_detail(oid):
 
     # 计算纯净度
     topic['purity'] = len(photos) / len(topic['photos']) if topic['photos'] else 0
+    # 处理时间
+    topic['modify_time'] = get_modify_time(topic)
 
     # 点击量 +1
     db.topics.update({'_id': ObjectId(oid)}, {'$inc': {'click_count': 1}})
@@ -142,7 +158,7 @@ def ajax_edit_rating(oid):
 
     # 查找相同的主题
     similarities = db.similarities.find({'topics': ObjectId(oid), 'value': 1}, {'topics': True})
-    same = set()
+    same = set([ObjectId(oid)])
     for s in similarities:
         same |= set(s['topics'])
     same = list(same)

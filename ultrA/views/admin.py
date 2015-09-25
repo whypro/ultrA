@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, division
-from datetime import datetime
+import datetime
 import os
 import hashlib
 from time import clock
@@ -84,7 +84,7 @@ def calculate_similarity():
                 # if db.similarities.find({'topics': {'$all': [topic_A['_id'], topic_B['_id']]}}).count():
                 db.similarities.remove({'topics': {'$all': [topic_A['_id'], topic_B['_id']]}}, multi=False)
 
-        db.topics.update({'_id': topic_A['_id']}, {'$set': {'similarity_calculated': True, 'modify_time': datetime.utcnow()}})
+        db.topics.update({'_id': topic_A['_id']}, {'$set': {'similarity_calculated': True, 'modify_time': datetime.datetime.utcnow()}})
     topic_A_cursor.close()
     return jsonify(status=200)
 

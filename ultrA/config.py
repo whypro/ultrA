@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 import os
 import platform
+import pytz
 
 
 class Config(object):
@@ -23,6 +24,8 @@ class Config(object):
 
     TOPICS_PER_PAGE = 24
     TOPICS_PER_ADMIN_PAGE = 100
+
+    TIME_ZONE = 'Asia/Shanghai'
 
 
 class DevelopmentConfig(Config):

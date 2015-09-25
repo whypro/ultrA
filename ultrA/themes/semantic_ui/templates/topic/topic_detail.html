@@ -27,6 +27,7 @@
       <div>
         <div class="ui label"><i class="heartbeat icon"></i> {{ topic.click_count|d(0) }} </div>
         <div class="ui label"><i class="signal icon"></i> {{ '{:.0f}%'.format(topic.purity*100) }} </div>
+        <div class="ui label"><i class="wait icon"></i> {{ topic.modify_time }} </div>
       </div>
 
       <div class="ui horizontal divider"><i class="camera icon"></i></div>
