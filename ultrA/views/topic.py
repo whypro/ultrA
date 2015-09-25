@@ -125,8 +125,6 @@ def show_topic_detail(oid):
         if photo:
             photos.append(photo)
 
-    # 计算纯净度
-    topic['purity'] = len(photos) / len(topic['photos']) if topic['photos'] else 0
     # 处理时间
     topic['modify_time'] = get_modify_time(topic)
 
@@ -178,37 +176,42 @@ def ajax_delete(oid):
     if delete_type not in ('delete', 'remove', 'wipe'):
         abort(400)
 
+    delete_topic(ObjectId(oid), delete_type)
+
+    return jsonify(status=200)
+
+
+def delete_topic(oid, delete_type):
     if delete_type == 'delete':
         # 仅标记为已删除
-        db.topics.update({'_id': ObjectId(oid)}, {'$set': {'status': 'deleted', 'modify_time': datetime.datetime.utcnow()}})
+        db.topics.update({'_id': oid}, {'$set': {'status': 'deleted', 'modify_time': datetime.datetime.utcnow()}})
         print 'delete'
     elif delete_type == 'remove':
         # 删除/数据库记录
         remove_topic_dir(oid)
-        db.photos.remove({'topic': ObjectId(oid)})
-        db.topics.update({'_id': ObjectId(oid)}, {'$set': {'photos': [], 'status': 'removed', 'modify_time': datetime.datetime.utcnow()}})
+        db.photos.remove({'topic': oid})
+        db.topics.update({'_id': oid}, {'$set': {'photos': [], 'status': 'removed', 'modify_time': datetime.datetime.utcnow()}})
         print 'remove'
     elif delete_type == 'wipe':
         # 删除对应目录
         remove_topic_dir(oid)
         # 删除数据库记录
-        db.photos.remove({'topic': ObjectId(oid)})
-        db.topics.remove({'_id': ObjectId(oid)})
+        db.photos.remove({'topic': oid})
+        db.topics.remove({'_id': oid})
         print 'wipe'
 
-    return jsonify(status=200)
 
 def remove_topic_dir(oid):
     # 删除对应目录
     topic_path = None
-    topic = db.topics.find_one({'_id': ObjectId(oid)}, {'path': True})
+    topic = db.topics.find_one({'_id': oid}, {'path': True})
     if topic:
         if 'path' in topic:
             # 首先从 topics 集合中找 path
             topic_path = os.path.join(current_app.config['MEDIA_PATH'], topic['path'])
         else:
             # 其次从 photos 集合中生成 path
-            first_photo = db.photos.find_one({'topic': ObjectId(oid)})
+            first_photo = db.photos.find_one({'topic': oid})
             if first_photo:
                 topic_path = os.path.dirname(os.path.join(current_app.config['MEDIA_PATH'], first_photo['path']))
 

@@ -8,6 +8,7 @@ from flask import Blueprint, request, current_app, jsonify, redirect, url_for
 
 from ..helpers import render_template
 from ..database import db
+from .topic import delete_topic
 
 
 admin = Blueprint('admin', __name__, url_prefix='/admin')
@@ -39,14 +40,29 @@ def load_topics(query, sort, page):
     total = topics.count()
 
     topics = list(topics)
-    for topic in topics:
-        # 计算每个主题的【纯净度】
-        photo_num = db.photos.find({'_id': {'$in': topic['photos']}, 'blur': {'$ne': True}}).count()
-        topic['purity'] = photo_num / len(topic['photos']) if topic['photos'] else 0
+    # for topic in topics:
+    #     pass
 
     pagination = dict(page=page, pages=total//current_app.config['TOPICS_PER_ADMIN_PAGE']+1)
 
     return topics, pagination
+
+
+@admin.route('/topic/purity/calculate/')
+def calculate_purity():
+    """计算主题的纯净度"""
+    for topic in db.topics.find({'purity_calculated': {'$ne': True}, 'status': 'normal'}):
+        photo_num = db.photos.find({'topic': topic['_id'], 'blur': {'$ne': True}}).count()
+        topic['purity'] = photo_num / len(topic['photos']) if topic['photos'] else 0
+        topic['modify_time'] = datetime.datetime.utcnow()
+        topic['purity_calculated'] = True
+        db.topics.save(topic)
+
+    # 删除纯净度为 0 的主题
+    for topic in db.topics.find({'purity': 0, 'status': 'normal'}, {'_id': True}):
+        delete_topic(topic['_id'], 'remove')
+
+    return jsonify(status=200)
 
 
 @admin.route('/topic/similarity/calculate/')

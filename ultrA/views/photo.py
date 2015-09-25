@@ -72,10 +72,10 @@ def ajax_blur_photo(oid):
     db.photos.update({'sha1': photo['sha1']}, {'$set': {'blur': True}}, multi=True)
     db.blurs.update({'sha1': photo['sha1']}, {'sha1': photo['sha1']}, upsert=True)
 
-    # 标记所有相关主题重新计算相关度
+    # 标记所有相关主题重新计算相关度和纯净度
     photos = db.photos.find({'sha1': photo['sha1']}, {'topic': True})
     topic_oids = set([p['topic'] for p in photos if 'topic' in p])  # 去重
     for topic_oid in topic_oids:
-        db.topics.update({'_id': topic_oid}, {'$set': {'similarity_calculated': False, 'modify_time': datetime.datetime.utcnow()}})
+        db.topics.update({'_id': topic_oid}, {'$set': {'similarity_calculated': False, 'purity_calculated': False, 'modify_time': datetime.datetime.utcnow()}})
 
     return jsonify(status=200)
