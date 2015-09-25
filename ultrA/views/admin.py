@@ -52,21 +52,23 @@ def load_topics(query, sort, page):
 @admin.route('/topic/similarity/calculate/')
 def calculate_similarity():
     """根据 SHA-1 计算两个主题的相似度"""
-    topic_A_cursor = db.topics.find({'similarity_calculated': {'$ne': True}, 'status': 'normal'}, timeout=False)
+    topic_A_cursor = db.topics.find({'similarity_calculated': {'$ne': True}, 'status': 'normal'}, {'_id': True}, timeout=False)
     count = topic_A_cursor.count()
     for i, topic_A in enumerate(topic_A_cursor):
         print 'similarity_calculating:', i, '/', count
         photos_A = db.photos.find({'topic': topic_A['_id'], 'blur': {'$ne': True}})
         # photos_A = db.photos.find({'_id': {'$in': topic_A['photos']}, 'blur': {'$ne': True}})
         shas_A = [photo['sha1'] for photo in photos_A]
-        for topic_B in db.topics.find({'status': 'normal', '_id': {'$ne': topic_A['_id']}}):
+        for topic_B in db.topics.find({'status': 'normal', '_id': {'$ne': topic_A['_id']}}, {'_id': True}):
             photos_B = db.photos.find({'topic': topic_B['_id'], 'blur': {'$ne': True}})
-            # photos_B = db.photos.find({'_id': {'$in': topic_B['photos']}, 'blur': {'$ne': True}})
-            shas_B = [photo['sha1'] for photo in photos_B]
-            # 防止被 0 除
-            if not shas_A and not shas_B:
-                continue
-            similarity_value = 2 * len(set(shas_A) & set(shas_B)) / (len(shas_A) + len(shas_B))
+            if not len(shas_A) or not photos_B.count():
+                similarity_value = 0
+            else:
+                # photos_B = db.photos.find({'_id': {'$in': topic_B['photos']}, 'blur': {'$ne': True}})
+                shas_B = [photo['sha1'] for photo in photos_B]
+                # 防止被 0 除
+                similarity_value = 2 * len(set(shas_A) & set(shas_B)) / (len(shas_A) + len(shas_B))
+
             if similarity_value > 0:
                 print similarity_value
                 print topic_A['_id'], topic_B['_id']
@@ -76,7 +78,7 @@ def calculate_similarity():
                     db.similarities.update({'_id': similarity_record['_id']}, {'$set': {'value': similarity_value}})
                 else:
                     db.similarities.insert({'topics': [topic_A['_id'], topic_B['_id']], 'value': similarity_value})
-            else: 
+            else:
                 # 可能是重新计算后 = 0，因此需要删除
                 # print 'remove similarity...'
                 # if db.similarities.find({'topics': {'$all': [topic_A['_id'], topic_B['_id']]}}).count():

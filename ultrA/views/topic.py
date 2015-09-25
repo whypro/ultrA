@@ -140,10 +140,18 @@ def ajax_edit_rating(oid):
 
     rating = int(rating)
 
+    # 查找相同的主题
+    similarities = db.similarities.find({'topics': ObjectId(oid), 'value': 1}, {'topics': True})
+    same = set()
+    for s in similarities:
+        same |= set(s['topics'])
+    same = list(same)
+    # print same
+
     if rating:
-        db.topics.update({'_id': ObjectId(oid)}, {'$set': {'rating': rating, 'modify_time': datetime.datetime.utcnow()}})
+        db.topics.update({'_id': {'$in': same}}, {'$set': {'rating': rating, 'modify_time': datetime.datetime.utcnow()}}, multi=True)
     else:
-        db.topics.update({'_id': ObjectId(oid)}, {'$set': {'modify_time': datetime.datetime.utcnow()}, '$unset': {'rating': ''}})
+        db.topics.update({'_id': {'$in': same}}, {'$set': {'modify_time': datetime.datetime.utcnow()}, '$unset': {'rating': ''}}, multi=True)
 
     return jsonify(success=True)
 

@@ -6,3 +6,4 @@
 * 部署至 Linux，使用 virtualenv
 * runserver.py -> manage.py
 * 将 ultrASpider 移至 greedy
+* time_zone 支持
