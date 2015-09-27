@@ -2,8 +2,10 @@
 from __future__ import unicode_literals
 import os
 from urlparse import urlparse, urljoin
+
 from flask import current_app, request, url_for, redirect
-from flask.ext.themes import render_theme_template
+
+from .deps.flaskext.themes import render_theme_template
 
 
 def get_default_theme():

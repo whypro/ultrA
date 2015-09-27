@@ -2,11 +2,11 @@
 from __future__ import unicode_literals
 
 from flask import Flask, g, flash, redirect, url_for
-from flask.ext.themes import setup_themes
 from pymongo import MongoClient
 
 from . import views
 from .database import db
+from .deps.flaskext.themes import setup_themes
 
 
 def create_app(config=None):
