@@ -28,7 +28,7 @@
 
 * status: 状态
 
-	值域为：normal, deleted, removed
+	值域为：normal, deleted, removed, refreshing
 
 ### Photo
 
@@ -93,7 +93,11 @@
 	* 删除 photos 集合所对应的记录
 	* 清空 topics 集合的 photos 字段
 	* 删除文件
-* wipe 完全删除（如果需要重新爬取时可使用该方式）
+* status -> refreshing: 刷新（如果需要重新爬取时可使用该方式）
+	* 标记为正在刷新（优先爬取）
+	* 删除 photos 集合所对应的记录
+	* 清空 topics 集合的 photos 字段
+* wipe 完全删除
 	* 删除 photos 集合中对应的记录
 	* 删除 topics 集合中对应的记录
-	
+

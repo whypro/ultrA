@@ -173,7 +173,7 @@ def ajax_edit_rating(oid):
 @topic.route('/<oid>/_delete/', methods=['POST'])
 def ajax_delete(oid):
     delete_type = request.form.get('delete_type')
-    if delete_type not in ('delete', 'remove', 'wipe'):
+    if delete_type not in ('delete', 'remove', 'refresh', 'wipe'):
         abort(400)
 
     delete_topic(ObjectId(oid), delete_type)
@@ -192,6 +192,11 @@ def delete_topic(oid, delete_type):
         db.photos.remove({'topic': oid})
         db.topics.update({'_id': oid}, {'$set': {'photos': [], 'status': 'removed', 'modify_time': datetime.datetime.utcnow()}})
         print 'remove'
+    elif delete_type == 'refresh':
+        remove_topic_dir(oid)
+        db.photos.remove({'topic': oid})
+        db.topics.update({'_id': oid}, {'$set': {'photos': [], 'status': 'refreshing', 'modify_time': datetime.datetime.utcnow()}})
+        print 'refresh'
     elif delete_type == 'wipe':
         # 删除对应目录
         remove_topic_dir(oid)
