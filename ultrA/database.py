@@ -21,6 +21,7 @@ class UltrADB(object):
         self.photos = db[app.config['PHOTO_COLLECTION']]
         self.blurs = db[app.config['BLUR_COLLECTION']]
         self.similarities = db['raw_similarities']
+        self.sites = db['raw_sites']
 
 
 db = UltrADB()

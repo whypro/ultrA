@@ -57,7 +57,7 @@
       <button id="delete" class="mini ui circular red button">删除</button>
     </div>
     <div class="two wide computer four wide mobile left aligned column">
-      <a class="mini ui circular blue button" href="{{ topic.url }}">原帖</a>
+      <a class="mini ui circular blue button" href="{{ site + topic.uri }}" target="_blank">原帖</a>
     </div>
   </div>
   <div class="row">
@@ -75,23 +75,21 @@
     <p>删除后将不可恢复。</p>
   </div>
   <div class="actions">
-    <div class="ui checkbox">
-      <input type="checkbox" id="physical_removal" />
-      <label>删除数据库中的记录</label>
-    </div>
-    <div class="ui checkbox">
-      <input type="checkbox" id="remove_images" checked />
-      <label>删除主题下的图片</label>
-    </div>
 
-    <div class="ui circular tiny negative icon button">
-      <i class="remove icon"></i>
-    </div>
+      <label>删除方式</label>
+      <select class="ui dropdown" id="delete_type">
+        <option value="delete">标记</option>
+        <option value="remove" selected="selected">移除</option>
+        <option value="wipe">清除</option>
+        <option value="refresh">刷新</option>
+      </select>
 
     <div class="ui circular tiny positive icon button">
       <i class="checkmark icon"></i>
     </div>
-    
+    <div class="ui circular tiny negative icon button">
+      <i class="remove icon"></i>
+    </div>
 
   </div>
 </div>
@@ -147,12 +145,13 @@
 
     /* 删除主题 */
     $("#delete").click(function(){
-
       $('.modal').modal('setting', {
         closable  : false,
         onApprove : function() {
+          var delete_type = $("#delete_type").val();
+          // alert(delete_type);
           post_data = {
-            'delete_type': 'remove',
+            'delete_type': delete_type,
             // 'physical_removal': $("#physical_removal").prop('checked'),
             // 'remove_images': $("#remove_images").prop('checked')
           };

@@ -131,7 +131,7 @@ def show_topic_detail(oid):
     # 点击量 +1
     db.topics.update({'_id': ObjectId(oid)}, {'$inc': {'click_count': 1}})
 
-    return render_template('topic/topic_detail.html', topic=topic, photos=photos)
+    return render_template('topic/topic_detail.html', topic=topic, photos=photos, site=current_app.config['ORIGIN_SITE'])
 
 
 @topic.route('/<oid>/_title/', methods=['POST'])
@@ -176,6 +176,7 @@ def ajax_delete(oid):
     if delete_type not in ('delete', 'remove', 'refresh', 'wipe'):
         abort(400)
 
+    # print delete_type
     delete_topic(ObjectId(oid), delete_type)
 
     return jsonify(status=200)

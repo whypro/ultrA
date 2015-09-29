@@ -19,6 +19,8 @@ def create_app(config=None):
 
     db.init_app(app)
 
+    init_site_name(app)
+
     return app
 
 
@@ -32,6 +34,11 @@ def config_blueprints(app):
 def configure_theme(app):
     setup_themes(app)
 
+def init_site_name(app):
+    site = db.sites.find_one({'avaliable': True})
+    if site:
+        # print site['name']
+        app.config['ORIGIN_SITE'] = site['name']
 
 def config_error_handlers(app):
     pass
