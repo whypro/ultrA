@@ -12,7 +12,8 @@ class Config(object):
     DEFAULT_THEME = 'semantic_ui'
 
     # MONGODB
-    DB_HOST = 'localhost'
+    # DB_HOST = 'localhost'
+    DB_HOST = '192.168.1.2'
     DB_NAME = 'ultrA'
     DB_USERNAME = 'whypro'
     DB_PASSWORD = 'whypro'
@@ -51,9 +52,10 @@ class UltrAConfig(DevelopmentConfig):
     if 'Windows' in platform.system():
         MEDIA_PATH = 'I:\\Data\\Files\\ultrA'
     else:
-        MEDIA_PATH = '/var/run/media/whypro/4. Backups/apple/results/'
+        MEDIA_PATH = '/mnt/my_passport/Data/Files/ultrA'
 
 
 class TestingConfig(UltrAConfig):
     TESTING = True
     CSRF_ENABLED = False
+
