@@ -8,3 +8,4 @@
 1. *优化 MongoDB 接口*
 * *runserver.py -> manage.py*
 * *time_zone 支持*
+* 转换图片时自动捕获异常，并标记
