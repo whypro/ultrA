@@ -35,7 +35,7 @@ def configure_theme(app):
     setup_themes(app)
 
 def init_site_name(app):
-    site = db.sites.find_one({'avaliable': True})
+    site = db.sites.find_one({'available': True})
     if site:
         # print site['name']
         app.config['ORIGIN_SITE'] = site['name']

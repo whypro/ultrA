@@ -222,5 +222,6 @@ def remove_topic_dir(oid):
                 topic_path = os.path.dirname(os.path.join(current_app.config['MEDIA_PATH'], first_photo['path']))
 
     if topic_path and os.path.exists(topic_path):
+        print oid
         print topic_path
         shutil.rmtree(topic_path)
