@@ -12,8 +12,8 @@ class Config(object):
     DEFAULT_THEME = 'semantic_ui'
 
     # MONGODB
-    # DB_HOST = 'localhost'
-    DB_HOST = '192.168.1.2'
+    DB_HOST = 'localhost'
+    # DB_HOST = '192.168.1.2'
     DB_NAME = 'ultrA'
     DB_USERNAME = 'whypro'
     DB_PASSWORD = 'whypro'
@@ -50,7 +50,7 @@ class UltrAConfig(DevelopmentConfig):
     PHOTO_COLLECTION = 'raw_photos'
     BLUR_COLLECTION = 'raw_blurs'
     if 'Windows' in platform.system():
-        MEDIA_PATH = 'I:\\Data\\Files\\ultrA'
+        MEDIA_PATH = 'J:\\Data\\Files\\ultrA'
     else:
         MEDIA_PATH = '/mnt/my_passport/Data/Files/ultrA'
 

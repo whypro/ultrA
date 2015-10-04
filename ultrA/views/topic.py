@@ -173,7 +173,7 @@ def ajax_edit_rating(oid):
 @topic.route('/<oid>/_delete/', methods=['POST'])
 def ajax_delete(oid):
     delete_type = request.form.get('delete_type')
-    if delete_type not in ('delete', 'remove', 'refresh', 'wipe'):
+    if delete_type not in ('hide', 'delete', 'remove', 'refresh', 'wipe'):
         abort(400)
 
     # print delete_type
@@ -183,10 +183,15 @@ def ajax_delete(oid):
 
 
 def delete_topic(oid, delete_type):
-    if delete_type == 'delete':
+    if delete_type == 'hide':
         # 仅标记为已删除
-        db.topics.update({'_id': oid}, {'$set': {'status': 'deleted', 'modify_time': datetime.datetime.utcnow()}})
-        print 'delete'
+        db.topics.update({'_id': oid}, {'$set': {'status': 'hidden', 'modify_time': datetime.datetime.utcnow()}})
+        print 'hide'
+    elif delete_type == 'delete':
+        # 保留文件
+        db.photos.remove({'topic': oid})
+        db.topics.update({'_id': oid}, {'$set': {'photos': [], 'status': 'deleted', 'modify_time': datetime.datetime.utcnow()}})
+        print 'deleted'
     elif delete_type == 'remove':
         # 删除/数据库记录
         remove_topic_dir(oid)
@@ -206,6 +211,8 @@ def delete_topic(oid, delete_type):
         db.topics.remove({'_id': oid})
         print 'wipe'
 
+    db.similarities.remove({'topics': oid}, multi=True)
+
 
 def remove_topic_dir(oid):
     # 删除对应目录
@@ -223,5 +230,5 @@ def remove_topic_dir(oid):
 
     if topic_path and os.path.exists(topic_path):
         print oid
-        print topic_path
+        # print topic_path
         shutil.rmtree(topic_path)

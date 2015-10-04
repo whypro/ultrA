@@ -10,7 +10,7 @@
         <a class="header" href="{{ url_for('topic.show_topic_detail', oid=topic._id) }}">{{ topic.title }}</a>
       </div>
       <div class="extra content">
-        <a href="{{ url_for('topic.show_topics', category=topic.category) }}" class="ui purple ribbon label">{{ topic.category }}</a>
+        <a href="{{ url_for('topic.show_topics', category=topic.category) }}" class="ui purple ribbon label" target="_blank">{{ topic.category }}</a>
         <div class="ui huge heart rating" data-rating="{{ topic.rating }}" data-max-rating="5"></div>
       </div>
     </div>

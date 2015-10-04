@@ -65,8 +65,8 @@ def calculate_purity():
     return jsonify(status=200)
 
 
-@admin.route('/topic/similarity/calculate/')
-def calculate_similarity():
+@admin.route('/topic/similarity/calculate/2/')
+def calculate_similarity_2():
     """根据 SHA-1 计算两个主题的相似度"""
     topic_A_cursor = db.topics.find({'similarity_calculated': {'$ne': True}, 'status': 'normal'}, {'_id': True}, timeout=False)
     count = topic_A_cursor.count()
@@ -102,6 +102,53 @@ def calculate_similarity():
 
         db.topics.update({'_id': topic_A['_id']}, {'$set': {'similarity_calculated': True, 'modify_time': datetime.datetime.utcnow()}})
     topic_A_cursor.close()
+    return jsonify(status=200)
+
+
+@admin.route('/topic/similarity/calculate/')
+def calculate_similarity():
+    """根据 SHA-1 计算两个主题的相似度"""
+    topics = []
+    for topic in db.topics.find({'status': 'normal'}, {'photos': True, 'similarity_calculated': True}):
+        photos = db.photos.find({'topic': topic['_id'], 'blur': {'$ne': True}}, {'sha1': True})
+        topic['photos'] = [photo['sha1'] for photo in photos]
+        topics.append(topic)
+
+    i = 0
+    for topic_A in topics:
+        if topic_A.get('similarity_calculated'):
+            # 已经计算过了
+            continue
+        print 'calculating...', i
+        for topic_B in topics:
+            if topic_B == topic_A:
+                continue
+            shas_A, shas_B = topic_A['photos'], topic_B['photos']
+            # 开始计算
+            if not len(shas_A) or not len(shas_B):
+                similarity_value = 0
+            else:
+                similarity_value = 2 * len(set(shas_A) & set(shas_B)) / (len(shas_A) + len(shas_B))
+
+            if similarity_value > 0:
+                print similarity_value
+                print topic_A['_id'], topic_B['_id']
+                # 更新或插入相似度
+                # db.similarities.update({'topics': {'$all': [topic_A['_id'], topic_B['_id']]}}, {'$set': {'value': similarity_value}}, upsert=True)
+                similarity_record = db.similarities.find_one({'topics': {'$all': [topic_A['_id'], topic_B['_id']]}})
+                if similarity_record:
+                    db.similarities.update({'_id': similarity_record['_id']}, {'$set': {'value': similarity_value}})
+                else:
+                    db.similarities.insert({'topics': [topic_A['_id'], topic_B['_id']], 'value': similarity_value})
+            else:
+                # 可能是重新计算后 = 0，因此需要删除
+                # print 'remove similarity...'
+                # if db.similarities.find({'topics': {'$all': [topic_A['_id'], topic_B['_id']]}}).count():
+                # db.similarities.update({'topics': {'$all': [topic_A['_id'], topic_B['_id']]}}, {'$set': {'value': similarity_value}})
+                db.similarities.remove({'topics': {'$all': [topic_A['_id'], topic_B['_id']]}})
+
+        db.topics.update({'_id': topic_A['_id']}, {'$set': {'similarity_calculated': True, 'modify_time': datetime.datetime.utcnow()}})
+        i += 1
     return jsonify(status=200)
 
 
