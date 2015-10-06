@@ -18,7 +18,7 @@
   </thead>
   <tbody>
     {% for similarity in similarities %}
-    <tr>
+    <tr{% if similarity.topics[0].title == similarity.topics[1].title %} class="warning"{% endif %}>
       {% for topic in similarity.topics %}
       <td><a href="{{ url_for('topic.show_topic_detail', oid=topic._id) }}">{{ topic.title|truncate(20, True) }}</a></td>
       <td>{{ topic.photos|length }}</td>
@@ -32,6 +32,8 @@
   <tfoot>
   </tfoot>
 </table>
+
+<a class="ui green button" href="{{ url_for('admin.calculate_similarity') }}">刷新</a>
 
 {{ render_pagination(pagination, 'admin.show_similar_topics', {}) }}
 
