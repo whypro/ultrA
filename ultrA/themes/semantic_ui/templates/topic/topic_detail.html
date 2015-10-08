@@ -166,6 +166,17 @@
 
   });
 
+  $(document).keydown(function (event) {
+    // alert(event.keyCode);
+    switch (event.keyCode) {
+    case 46:
+      // alert('Delete');
+      $("#delete").click();
+      break;
+    }
+    return false;
+  });
+
 </script>
 
 {% endblock %}

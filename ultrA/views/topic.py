@@ -42,7 +42,7 @@ def show_topics(page, category=None):
     if category:
         query['category'] = category
 
-    sort = [('rating', 1), ('_id', -1)]
+    sort = [('rating', 1), ('modify_time', -1)]
 
     topics, pagination = load_topics(query=query, sort=sort, page=page)
 
@@ -106,7 +106,7 @@ def show_match_topic(key, page):
     query = dict()
     query['status'] = 'normal'
     query['title'] = {'$regex': key, '$options': '$i'}
-    sort = [('rating', -1), ('_id', -1)]
+    sort = [('rating', -1), ('modify_time', -1)]
     topics, pagination = load_topics(query=query, sort=sort, page=page)
 
     return render_template('topic/topics.html', endpoint='topic.show_match_topic', args={'key': key}, topics=topics, pagination=pagination)

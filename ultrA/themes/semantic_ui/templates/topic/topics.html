@@ -25,6 +25,24 @@
     $(".rating").rating("disable");
   });
 
+  $(document).keydown(function (event) {
+    var page;
+    switch (event.keyCode) {
+    case 37:
+      // alert('方向键-左');
+      page = $("#prev-page").attr("href");
+      break;
+    case 39:
+      // alert('方向键-右');
+      page = $("#next-page").attr("href");
+      break;
+    };
+    if (page != undefined) {
+        location.href = page;
+    }
+    return false;
+  });
+
     {#
 $("#more").click(function(){
   // 动态刷新

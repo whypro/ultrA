@@ -23,10 +23,10 @@
     <span>{{ pagination.page }} / {{ pagination.pages }}</span>
     <div class="ui borderless pagination menu">
       {% if pagination.page > 1 -%}
-      <a class="item" href="{{ url_for(endpoint, page=pagination.page-1, **args) }}"><i class="left arrow icon"></i></a>
+      <a id="prev-page" class="item" href="{{ url_for(endpoint, page=pagination.page-1, **args) }}"><i class="left arrow icon"></i></a>
       {%- endif %}
       {% if pagination.page < pagination.pages -%}
-      <a class="item" href="{{ url_for(endpoint, page=pagination.page+1, **args) }}"><i class="icon right arrow"></i></a>
+      <a id="next-page" class="item" href="{{ url_for(endpoint, page=pagination.page+1, **args) }}"><i class="icon right arrow"></i></a>
       {%- endif %}
     </div>
   </div>

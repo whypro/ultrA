@@ -53,7 +53,7 @@ def send_image(size, oid):
         else:
             print(img.format)
             img.save(img_io, img.format)
-
+        # img_io.close()
         f.close()
         img_io.seek(0)
         return send_file(img_io, mimetype='image/'+img.format.lower())
