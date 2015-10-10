@@ -168,13 +168,15 @@
 
   $(document).keydown(function (event) {
     // alert(event.keyCode);
+    var toggled = false;
     switch (event.keyCode) {
     case 46:
       // alert('Delete');
       $("#delete").click();
+      toggled = true;
       break;
     }
-    return false;
+    return ~toggled;
   });
 
 </script>

@@ -83,21 +83,27 @@
 ### 删除主题
 删除可以通过以下方式：
 
-* status -> deleted: 逻辑删除（不释放空间）
-	* 标记为已删除
+* type = hide, status -> hidden: 隐藏（标记）
+	* 标记为已隐藏
 	* 保留 photos 集合所对应的记录
 	* 保留 topics 集合的 photos 字段
 	* 保留文件
-* status -> removed: 物理删除（释放空间）
+
+* type = delete, status -> deleted: 逻辑删除（保留文件）
+	* 标记为已删除
+	* 删除 photos 集合所对应的记录
+	* 删除 topics 集合的 photos 字段
+	* 保留文件
+* type = remove, status -> removed: 物理删除（释放空间）
 	* 标记为已移除
 	* 删除 photos 集合所对应的记录
 	* 清空 topics 集合的 photos 字段
 	* 删除文件
-* status -> refreshing: 刷新（如果需要重新爬取时可使用该方式）
+* type = refresh, status -> refreshing: 刷新（如果需要重新爬取时可使用该方式）
 	* 标记为正在刷新（优先爬取）
 	* 删除 photos 集合所对应的记录
 	* 清空 topics 集合的 photos 字段
-* wipe 完全删除
+* type = wipe, 完全删除
 	* 删除 photos 集合中对应的记录
 	* 删除 topics 集合中对应的记录
 

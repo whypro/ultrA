@@ -30,4 +30,27 @@
       {%- endif %}
     </div>
   </div>
+
+  <script>
+  $(document).keydown(function (event) {
+    var toggled = false;
+    var page;
+    switch (event.keyCode) {
+    case 37:
+      // alert('方向键-左');
+      page = $("#prev-page").attr("href");
+      toggled = true;
+      break;
+    case 39:
+      // alert('方向键-右');
+      page = $("#next-page").attr("href");
+      toggled = true;
+      break;
+    };
+    if (page != undefined) {
+        location.href = page;
+    }
+    return ~toggled;
+  });
+  </script>
 {% endmacro %}
