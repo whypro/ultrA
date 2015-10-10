@@ -52,6 +52,13 @@
       </div>
     </div>
   </div>
+  <div class="row">
+      <div class="left aligned column">
+      {% for s_topic in topic.similarities %}
+      <a href="{{ url_for('topic.show_topic_detail', oid=s_topic._id) }}">{{ s_topic.title }}</a>
+      {% endfor %}
+      </div>
+  </div>
   <div class="two column row">
     <div class="two wide computer four wide mobile left aligned column">
       <button id="delete" class="mini ui circular red button">删除</button>

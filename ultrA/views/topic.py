@@ -127,6 +127,15 @@ def show_topic_detail(oid):
 
     # 处理时间
     topic['modify_time'] = get_modify_time(topic)
+    # 相似主题
+    s_topic_oids = set()
+    similarities = db.similarities.find({'topics': ObjectId(oid)})
+    for similarity in similarities:
+        s_topic_oids |= set(similarity['topics'])
+    s_topic_oids.discard(ObjectId(oid))
+    s_topics = db.topics.find({'_id': {'$in': list(s_topic_oids)}}, {'title': True})
+    topic['similarities'] = list(s_topics)
+    print topic['similarities']
 
     # 点击量 +1
     db.topics.update({'_id': ObjectId(oid)}, {'$inc': {'click_count': 1}})
