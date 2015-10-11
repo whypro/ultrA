@@ -52,16 +52,19 @@
 * value
 
 ## 主要功能
+
 ### 相似主题管理
 分析所有主题，罗列两个相似主题，显示主题A【标题】、主题A【图片数】，主题B【标题】、主题B【图片数】，【相似度】
 
 #### 相似主题分析算法
-获取主题A所有图片的 SHA-1 值数组，与主题B求交集。随后标记 topic 的 similarity_calculated = True
+遍历所有主题，获取主题A所有图片的 SHA-1 值数组，与主题B求交集，计算相似度，如果 > 0 则放入 relevant 集合，并标记该 topic 的 similarity_calculated = True。
 
 	similarity = 2*len(intersection(TA-IMAGE-SHA1-LIST, TB-IMAGE-SHA1-LIST)) / (len(TA-IMAGE-SHA1-LIST) + len(TB-IMAGE-SHA1-LIST))
 
 #### 相似度计算时机
-* 保存爬取到的主题时，遍历所有主题，计算相似度，如果 > 0 则放入 relevant 集合，并标记该 topic 的 similarity_calculated = True。
+<!--
+* 保存爬取到的主题时
+-->
 * 标记垃圾图片时，将所有与之相关的 topic 标记为 similarity_calculated = False
 * 手动运行
 
@@ -70,14 +73,16 @@
 
 	purity = (len(topic['photos']) - len(blurs)) / len(topic['photos'])
 
-<!--
-#### 纯净度计算时机
-* 保存爬取到的主题时
-* 手动运行
-* 标记垃圾图片时
 
-当【纯净度】为 0 时，删除主题（removed）。
+#### 纯净度计算时机
+<!--
+* 保存爬取到的主题时
 -->
+* 手动运行
+* 标记垃圾图片时，将所有与之相关的 topic 标记为 purity_calculated = False
+
+当【纯净度】为 0 时，删除主题（remove）。
+
 
 
 ### 删除主题
@@ -90,20 +95,60 @@
 	* 保留文件
 
 * type = delete, status -> deleted: 逻辑删除（保留文件）
+	
+	主要用在两个主题完全相同，并且物理文件 path 也相同的场景。
+
 	* 标记为已删除
 	* 删除 photos 集合所对应的记录
 	* 删除 topics 集合的 photos 字段
 	* 保留文件
 * type = remove, status -> removed: 物理删除（释放空间）
+
+	主要用在删除无用主题的场景。
+
 	* 标记为已移除
 	* 删除 photos 集合所对应的记录
 	* 清空 topics 集合的 photos 字段
 	* 删除文件
 * type = refresh, status -> refreshing: 刷新（如果需要重新爬取时可使用该方式）
+
+	主要用在确保远程主题完好，因为各种原因，本地爬虫失败，需要重新爬取的场景。
+
 	* 标记为正在刷新（优先爬取）
 	* 删除 photos 集合所对应的记录
 	* 清空 topics 集合的 photos 字段
 * type = wipe, 完全删除
 	* 删除 photos 集合中对应的记录
 	* 删除 topics 集合中对应的记录
+
+## URL Pattern
+
+### 主题页面
+
+/topic/
+
+/topic/<int:topic_oid>/
+
+### 图片页面
+
+/photo/show/<int:photo_oid>/
+
+/photo/<int:photo_oid>/<size[thumbnail,large,origin]>/
+
+### 管理页面
+
+#### 主题管理
+
+/admin/topic/
+
+/admin/topic/status/<status[normal,hidden,deleted,removed,refreshing]\>/  
+
+/admin/topic/rating/<int:rating\>/<op[lt,gt]\>/  
+
+/admin/topic/purity/<int:purity\>/<op[lt,gt]\>/
+
+#### 相似主题管理
+
+/admin/topic/similarity/  
+/admin/topic/similarity/<int:similarity\>/<op[lt,gt]\>/
 

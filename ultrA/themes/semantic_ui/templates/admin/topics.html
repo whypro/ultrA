@@ -24,10 +24,14 @@
       </td>
       <td>{{ topic.photos|length }}</td>
       <td>{{ topic.category }}</td>
-      {% if topic.status == 'deleted' %}
+      {% if topic.status == 'hidden' %}
+      <td class="negative">隐藏</td>
+      {% elif topic.status == 'deleted' %}
       <td class="negative">逻辑删除</td>
       {% elif topic.status == 'removed' %}
       <td class="negative">物理删除</td>
+      {% elif topic.status == 'refreshing' %}
+      <td class="negative">刷新中</td>
       {% else %}
       <td class="positive">正常</td>
       {% endif %}
