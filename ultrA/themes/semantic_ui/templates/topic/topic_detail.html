@@ -159,7 +159,7 @@
           var delete_type = $("#delete_type").val();
           // alert(delete_type);
           post_data = {
-            'delete_type': delete_type,
+            'delete_type': delete_type
             // 'physical_removal': $("#physical_removal").prop('checked'),
             // 'remove_images': $("#remove_images").prop('checked')
           };
@@ -181,6 +181,12 @@
       // alert('Delete');
       $("#delete").click();
       toggled = true;
+      break;
+    case 82:  // 'r'
+      $.post("{{ url_for('topic.ajax_delete', oid=topic._id) }}", {'delete_type': 'refresh'}, function(data) {
+        // history.go(-1);
+        window.close();
+      });
       break;
     }
     return ~toggled;
