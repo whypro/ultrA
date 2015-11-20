@@ -18,7 +18,7 @@
   </thead>
   <tbody>
     {% for similarity in similarities %}
-    <tr{% if similarity.topics[0].title == similarity.topics[1].title %} class="warning"{% endif %}>
+    <tr class="{% if similarity.topics[0].title == similarity.topics[1].title %} warning{% endif %}{% if similarity.value == 1 and (not similarity.topics[0].rating or not similarity.topics[0]) %} error{% endif %}">
       {% for topic in similarity.topics %}
       <td><a href="{{ url_for('topic.show_topic_detail', oid=topic._id) }}">{{ topic.title|truncate(20, True) }}</a></td>
       <td>{{ topic.photos|length }}</td>

@@ -42,7 +42,7 @@ def show_topics(page, category=None):
     if category:
         query['category'] = category
 
-    sort = [('rating', 1), ('modify_time', -1)]
+    sort = [('rating', 1), ('create_time', -1)]
 
     topics, pagination = load_topics(query=query, sort=sort, page=page)
 
@@ -62,7 +62,7 @@ def load_topics(query, sort, page):
     topics = list(topics)
     for topic in topics:
         topic['cover_oid'] = get_cover_oid(topic)
-        topic['modify_time'] = get_modify_time(topic)
+        # topic['modify_time'] = get_modify_time(topic)
 
     pagination = dict(page=page, pages=total//current_app.config['TOPICS_PER_PAGE']+1)
 
@@ -77,16 +77,16 @@ def get_cover_oid(topic):
     return None
 
 
-def get_modify_time(topic):
-    if 'modify_time' in topic:
-        tm = topic['modify_time']
-    elif 'create_time' in topic:
-        tm = topic['create_time']
-    else:
-        return None
+# def get_modify_time(topic):
+#     if 'modify_time' in topic:
+#         tm = topic['modify_time']
+#     elif 'create_time' in topic:
+#         tm = topic['create_time']
+#     else:
+#         return None
 
-    tz = pytz.timezone(current_app.config['TIME_ZONE'])
-    return tm.astimezone(tz).strftime('%Y-%m-%d %H:%M')
+#     tz = pytz.timezone(current_app.config['TIME_ZONE'])
+#     return tm.astimezone(tz).strftime('%Y-%m-%d %H:%M')@topic.route('/hot/', defaults={'page': 1})
 
 
 @topic.route('/hot/', defaults={'page': 1})
@@ -126,7 +126,7 @@ def show_topic_detail(oid):
             photos.append(photo)
 
     # 处理时间
-    topic['modify_time'] = get_modify_time(topic)
+    # topic['modify_time'] = get_modify_time(topic)
     # 相似主题
     s_topic_oids = set()
     similarities = db.similarities.find({'topics': ObjectId(oid)})
