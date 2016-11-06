@@ -10,7 +10,7 @@ from flask import jsonify
 from PIL import Image
 
 from ..helpers import render_template
-from ..database import db
+from ..extensions import db
 
 
 photo = Blueprint('photo', __name__, url_prefix='/photo')

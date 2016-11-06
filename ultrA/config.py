@@ -26,7 +26,7 @@ class Config(object):
     TOPICS_PER_PAGE = 24
     TOPICS_PER_ADMIN_PAGE = 100
 
-    TIME_ZONE = 'Asia/Shanghai'
+    TIME_ZONE = pytz.timezone('Asia/Shanghai')
 
 
 class DevelopmentConfig(Config):

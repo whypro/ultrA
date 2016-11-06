@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from pymongo import MongoClient
 from flask import current_app
-
+from flask.ext.themes2 import Themes
 
 class UltrADB(object):
     def __init__(self, app=None):
@@ -25,3 +25,5 @@ class UltrADB(object):
 
 
 db = UltrADB()
+
+themes = Themes()

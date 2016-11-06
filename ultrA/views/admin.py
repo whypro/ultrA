@@ -7,7 +7,7 @@ from time import clock
 from flask import Blueprint, request, current_app, jsonify, redirect, url_for
 
 from ..helpers import render_template
-from ..database import db
+from ..extensions import db
 from .topic import delete_topic
 
 

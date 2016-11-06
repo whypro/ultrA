@@ -5,8 +5,8 @@ from flask import Flask, g, flash, redirect, url_for
 from pymongo import MongoClient
 
 from . import views
-from .database import db
-from .deps.flaskext.themes import setup_themes
+from .extensions import db
+from .extensions import themes
 
 
 def create_app(config=None):
@@ -14,10 +14,10 @@ def create_app(config=None):
     app.config.from_object(config)
     config_blueprints(app)
     config_error_handlers(app)
-    configure_theme(app)
     config_context_processor(app)
 
     db.init_app(app)
+    themes.init_themes(app)
 
     init_site_name(app)
 
@@ -30,9 +30,6 @@ def config_blueprints(app):
     app.register_blueprint(views.photo)
     app.register_blueprint(views.admin)
 
-
-def configure_theme(app):
-    setup_themes(app)
 
 def init_site_name(app):
     site = db.sites.find_one({'available': True})

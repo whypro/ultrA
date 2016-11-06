@@ -5,7 +5,7 @@ from urlparse import urlparse, urljoin
 
 from flask import current_app, request, url_for, redirect
 
-from .deps.flaskext.themes import render_theme_template
+from flask.ext.themes2 import render_theme_template
 
 
 def get_default_theme():

@@ -10,7 +10,7 @@ from flask import url_for, request, jsonify
 from bson.objectid import ObjectId
 
 from ..helpers import render_template
-from ..database import db
+from ..extensions import db
 
 
 topic = Blueprint('topic', __name__, url_prefix='/topic')
@@ -86,7 +86,7 @@ def get_cover_oid(topic):
 #         return None
 
 #     tz = pytz.timezone(current_app.config['TIME_ZONE'])
-#     return tm.astimezone(tz).strftime('%Y-%m-%d %H:%M')@topic.route('/hot/', defaults={'page': 1})
+#     return tm.astimezone(tz).strftime('%Y-%m-%d %H:%M')
 
 
 @topic.route('/hot/', defaults={'page': 1})

@@ -12,7 +12,7 @@ from flask import Blueprint, send_from_directory, current_app, abort, redirect, 
 from flask import url_for, request, jsonify
 
 from ..helpers import render_template
-from ..database import db
+from ..extensions import db
 
 
 home = Blueprint('home', __name__)
